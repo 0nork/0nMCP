@@ -51,7 +51,7 @@ crm.js            CRM service tools — first integration
 ## Development
 
 ```bash
-git clone https://github.com/Crypto-Goatz/0nMCP.git
+git clone https://github.com/0nork/0nMCP.git
 cd 0nMCP
 npm install
 ```

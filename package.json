@@ -33,11 +33,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Crypto-Goatz/0nMCP"
+    "url": "https://github.com/0nork/0nMCP"
   },
-  "homepage": "https://github.com/Crypto-Goatz/0nMCP",
+  "homepage": "https://github.com/0nork/0nMCP",
   "bugs": {
-    "url": "https://github.com/Crypto-Goatz/0nMCP/issues"
+    "url": "https://github.com/0nork/0nMCP/issues"
   },
   "type": "module",
   "engines": {

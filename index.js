@@ -11,7 +11,7 @@
 //  Universal AI-Powered API Orchestrator
 //  Connect services. Describe tasks. AI handles the rest.
 //
-//  https://github.com/Crypto-Goatz/0nMCP
+//  https://github.com/0nork/0nMCP
 //  MIT License — Open Source
 //
 // ============================================================

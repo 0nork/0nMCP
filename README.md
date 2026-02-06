@@ -411,13 +411,13 @@ We want 0nMCP to be the **open standard** for AI-powered API orchestration.
 
 **Ways to contribute:**
 - **Add a service** — Drop it in the catalog. See [CONTRIBUTING.md](CONTRIBUTING.md)
-- **Report bugs** — [Open an issue](https://github.com/Crypto-Goatz/0nMCP/issues)
+- **Report bugs** — [Open an issue](https://github.com/0nork/0nMCP/issues)
 - **Suggest features** — Start a discussion
 - **Improve docs** — PRs welcome
 - **Star the repo** — Help others find it
 
 ```bash
-git clone https://github.com/Crypto-Goatz/0nMCP.git
+git clone https://github.com/0nork/0nMCP.git
 cd 0nMCP
 npm install
 node index.js
@@ -443,11 +443,11 @@ Built on:
 
 ### Stop building workflows. Start describing outcomes.
 
-**[Star this repo](https://github.com/Crypto-Goatz/0nMCP)** if you believe AI should just *do things* for you.
+**[Star this repo](https://github.com/0nork/0nMCP)** if you believe AI should just *do things* for you.
 
 ---
 
-Made with conviction by [RocketOpp](https://github.com/Crypto-Goatz)
+Made with conviction by [RocketOpp](https://github.com/0nork)
 
 *"The best automation is the one you don't have to build."*
 
