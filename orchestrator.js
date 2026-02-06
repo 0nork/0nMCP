@@ -1,14 +1,17 @@
 // ============================================================
-// 0nMCP — AI Orchestrator
+// 0nMCP — AI Orchestrator (.0n Standard)
 // ============================================================
 // The brain. Takes natural language tasks, plans execution
 // across connected services, and executes the plan.
 //
 // Uses Anthropic Claude for intelligent planning when
 // ANTHROPIC_API_KEY is set. Falls back to keyword matching.
+//
+// Logs all executions to ~/.0n/history/ per the .0n spec.
 // ============================================================
 
 import { SERVICE_CATALOG } from "./catalog.js";
+import { logExecution } from "./connections.js";
 
 // ── Capability keywords for fallback matching ─────────────
 const CAPABILITY_KEYWORDS = {
@@ -111,7 +114,7 @@ export class Orchestrator {
         ? await this._aiSummarize(task, results)
         : this._fallbackSummarize(task, results);
 
-      return {
+      const result = {
         success: successful === results.length,
         message: summary,
         details: {
@@ -124,7 +127,32 @@ export class Orchestrator {
         results,
       };
 
+      // Log to ~/.0n/history/
+      logExecution({
+        success: result.success,
+        task,
+        startedAt: new Date(Date.now() - duration).toISOString(),
+        duration,
+        steps: results.map(r => ({
+          service: r.service,
+          endpoint: r.endpoint,
+          status: r.success ? "completed" : "failed",
+          error: r.error || null,
+        })),
+        servicesUsed,
+      });
+
+      return result;
+
     } catch (err) {
+      logExecution({
+        success: false,
+        task,
+        startedAt: new Date(startTime).toISOString(),
+        duration: Date.now() - startTime,
+        error: err.message,
+      });
+
       return {
         success: false,
         error: err.message,

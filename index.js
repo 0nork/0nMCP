@@ -11,6 +11,9 @@
 //  Universal AI-Powered API Orchestrator
 //  Connect services. Describe tasks. AI handles the rest.
 //
+//  Implements the .0n Standard: https://github.com/0nork/0n-spec
+//  Config: ~/.0n/ | Connections: ~/.0n/connections/*.0n
+//
 //  https://github.com/0nork/0nMCP
 //  MIT License — Open Source
 //

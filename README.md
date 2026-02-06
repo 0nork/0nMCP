@@ -20,7 +20,7 @@
 [![Services](https://img.shields.io/badge/services-17-blue?style=flat-square)](#-supported-services)
 [![Tools](https://img.shields.io/badge/tools-17-orange?style=flat-square)](#-all-tools)
 
-[Demo](#-watch-it-work) · [Install](#-installation) · [Services](#-supported-services) · [Tools](#-all-tools) · [Examples](#-examples) · [Contributing](#-contributing)
+[Demo](#-watch-it-work) · [Install](#-installation) · [Services](#-supported-services) · [Tools](#-all-tools) · [.0n Standard](#-the-0n-standard) · [Examples](#-examples) · [Contributing](#-contributing)
 
 </div>
 
@@ -298,13 +298,56 @@ The orchestrator uses keyword matching to route tasks to the right service. Less
 
 ---
 
+## The .0n Standard
+
+0nMCP implements the **[.0n Standard](https://github.com/0nork/0n-spec)** — a universal configuration format for AI orchestration.
+
+```
+~/.0n/
+├── config.json               # Global settings
+├── connections/              # Service credentials as .0n files
+│   ├── stripe.0n
+│   ├── slack.0n
+│   └── sendgrid.0n
+├── workflows/                # Saved automation definitions
+│   └── invoice-notify.0n
+├── snapshots/                # System state captures
+│   └── crm-setup.0n
+├── history/                  # Execution logs (JSONL by date)
+│   └── 2026-02-06.jsonl
+└── cache/
+```
+
+Every connection is stored as a `.0n` file with a standard header:
+
+```json
+{
+  "$0n": {
+    "type": "connection",
+    "version": "1.0.0",
+    "name": "Production Stripe"
+  },
+  "service": "stripe",
+  "auth": {
+    "type": "api_key",
+    "credentials": { "api_key": "sk_live_..." }
+  }
+}
+```
+
+Every task execution is logged to `~/.0n/history/` as JSONL — full audit trail of what ran, when, and how.
+
+**[Read the full spec](https://github.com/0nork/0n-spec)**
+
+---
+
 ## Architecture
 
 ```
 0nMCP/
 ├── index.js          # Entry point — 7 universal tools + server startup
 ├── catalog.js        # Service catalog — 17 integrations with endpoints
-├── connections.js    # Connection manager — credential storage (~/.0nmcp/)
+├── connections.js    # Connection manager — ~/.0n/connections/*.0n
 ├── orchestrator.js   # AI execution planner — the brain
 ├── crm.js            # CRM tools — 10 dedicated tools, first full integration
 ├── package.json
@@ -316,8 +359,9 @@ The orchestrator uses keyword matching to route tasks to the right service. Less
 | Component | What It Does |
 |-----------|-------------|
 | **Service Catalog** | Defines all 17 services — their base URLs, endpoints, auth patterns, and capabilities |
-| **Connection Manager** | Stores and retrieves credentials locally at `~/.0nmcp/connections.json` |
+| **Connection Manager** | Stores credentials as `.0n` files in `~/.0n/connections/` per the .0n standard |
 | **Orchestrator** | The brain — parses natural language, plans multi-step execution, calls APIs, chains data |
+| **Execution History** | Logs every task to `~/.0n/history/` as JSONL — full audit trail |
 | **Universal Tools** | MCP interface: `execute`, `connect_service`, `api_call`, etc. |
 | **CRM Tools** | Direct access: pipelines, tags, custom values, workflows, full snapshot deploy |
 
@@ -327,8 +371,9 @@ The orchestrator uses keyword matching to route tasks to the right service. Less
 
 - **Local execution** — MCP server runs on your machine, not in the cloud
 - **Direct API calls** — Requests go straight to each service, not through a proxy
-- **Your credentials** — Stored locally at `~/.0nmcp/connections.json`, never sent anywhere
+- **Your credentials** — Stored locally in `~/.0n/connections/` as `.0n` files, never sent anywhere
 - **Anthropic key** — Only used for task planning (never passed to external services)
+- **Execution history** — Full audit trail in `~/.0n/history/`
 - **Open source** — Audit every line yourself
 
 ---
@@ -343,10 +388,10 @@ The orchestrator uses keyword matching to route tasks to the right service. Less
 
 ### Credential Storage
 
-Connections stored in plain text at `~/.0nmcp/connections.json`. For production:
+Connections stored as `.0n` files in `~/.0n/connections/`. For production:
 - Use a secrets manager
-- Encrypt the connections file
-- Use environment variables for credentials
+- Enable encryption via `~/.0n/config.json`
+- Use environment variables: `"api_key": "{{env.STRIPE_KEY}}"`
 
 ---
 
@@ -392,9 +437,11 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the full guide.
 - [x] CRM deep integration (10 dedicated tools)
 - [x] Full snapshot deployment (pipeline + tags + values + workflows)
 - [x] Keyword fallback mode (works without Anthropic key)
+- [x] **.0n Standard** — universal config format (`~/.0n/`)
+- [x] **Execution history** — JSONL logs in `~/.0n/history/`
+- [x] **Legacy migration** — auto-migrate from `~/.0nmcp/` to `~/.0n/`
 - [ ] **OAuth flows** — connect with one click
-- [ ] **Credential encryption** — at-rest security
-- [ ] **Execution history** — see what ran and when
+- [ ] **Credential encryption** — AES-256-GCM at-rest security
 - [ ] **Scheduled tasks** — "every Monday, send a report"
 - [ ] **Webhooks** — trigger on external events
 - [ ] **Conditionals** — "if balance < $100, alert me"
