@@ -1,515 +1,350 @@
 #!/usr/bin/env node
+// ============================================================
+//
+//   ██████╗ ███╗   ██╗███╗   ███╗ ██████╗██████╗
+//  ██╔═████╗████╗  ██║████╗ ████║██╔════╝██╔══██╗
+//  ██║██╔██║██╔██╗ ██║██╔████╔██║██║     ██████╔╝
+//  ████╔╝██║██║╚██╗██║██║╚██╔╝██║██║     ██╔═══╝
+//  ╚██████╔╝██║ ╚████║██║ ╚═╝ ██║╚██████╗██║
+//   ╚═════╝ ╚═╝  ╚═══╝╚═╝     ╚═╝ ╚═════╝╚═╝
+//
+//  Universal AI-Powered API Orchestrator
+//  Connect services. Describe tasks. AI handles the rest.
+//
+//  https://github.com/Crypto-Goatz/0nMCP
+//  MIT License — Open Source
+//
+// ============================================================
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
-const CRM_API_BASE = "https://services.leadconnectorhq.com";
-const AUTH_URL = "https://marketplace.leadconnectorhq.com/oauth/chooselocation";
-const TOKEN_URL = "https://services.leadconnectorhq.com/oauth/token";
-const API_VERSION = "2021-07-28";
+import { SERVICE_CATALOG, listServices, getService } from "./catalog.js";
+import { ConnectionManager } from "./connections.js";
+import { Orchestrator } from "./orchestrator.js";
+import { registerCrmTools } from "./crm.js";
 
-function crmHeaders(accessToken) {
-  return {
-    "Authorization": `Bearer ${accessToken}`,
-    "Content-Type": "application/json",
-    "Version": API_VERSION
-  };
-}
+// ── Initialize ─────────────────────────────────────────────
+const connections = new ConnectionManager();
+const orchestrator = new Orchestrator(connections);
 
 const server = new McpServer({
   name: "0nMCP",
-  version: "1.0.0"
+  version: "1.0.0",
 });
 
-// ─── TOOL: crm_auth_url ────────────────────────────────────────────
+// ============================================================
+// UNIVERSAL TOOLS
+// ============================================================
+
+// ─── execute ───────────────────────────────────────────────
 server.tool(
-  "crm_auth_url",
-  "Generate the OAuth authorization URL for connecting a CRM sub-account. Returns a URL the user opens in their browser to authorize access.",
+  "execute",
+  `Execute any task using connected services. The AI orchestrator automatically:
+1. Parses your intent from natural language
+2. Finds the best services to use
+3. Creates an execution plan
+4. Executes all necessary API calls
+5. Returns results
+
+Examples:
+- "Send an email to john@example.com about the meeting tomorrow"
+- "Create a Stripe customer for sarah@test.com"
+- "Post to #sales on Slack: We just closed a deal!"
+- "Get my Stripe balance"
+- "Add a record to Airtable: Name=John, Status=Active"
+- "Send an SMS to +1234567890: Your order shipped"
+- "Create a GitHub issue: Bug in login page"`,
   {
-    client_id: z.string().describe("CRM Marketplace app Client ID"),
-    redirect_uri: z.string().describe("OAuth redirect URI (must match app config)")
+    task: z.string().describe("Natural language description of what you want to accomplish"),
   },
-  async ({ client_id, redirect_uri }) => {
-    const scopes = [
-      "contacts.readonly", "contacts.write",
-      "opportunities.readonly", "opportunities.write",
-      "locations.readonly", "locations.write",
-      "locations/customValues.readonly", "locations/customValues.write",
-      "locations/customFields.readonly", "locations/customFields.write",
-      "locations/tags.readonly", "locations/tags.write",
-      "locations/templates.readonly",
-      "calendars.readonly", "calendars.write",
-      "calendars/events.readonly", "calendars/events.write",
-      "conversations.readonly", "conversations.write",
-      "conversations/message.readonly", "conversations/message.write",
-      "workflows.readonly",
-      "forms.readonly", "forms.write",
-      "funnels/funnel.readonly", "funnels/page.readonly",
-      "users.readonly", "users.write",
-      "oauth.readonly", "oauth.write",
-      "snapshots.readonly", "snapshots.write",
-      "businesses.readonly", "businesses.write",
-      "campaigns.readonly"
-    ].join(" ");
+  async ({ task }) => {
+    const result = await orchestrator.execute(task);
 
-    const authUrl = `${AUTH_URL}?response_type=code&redirect_uri=${encodeURIComponent(redirect_uri)}&client_id=${client_id}&scope=${encodeURIComponent(scopes)}`;
-
-    return { content: [{ type: "text", text: JSON.stringify({ authUrl }, null, 2) }] };
-  }
-);
-
-// ─── TOOL: crm_exchange_token ──────────────────────────────────────
-server.tool(
-  "crm_exchange_token",
-  "Exchange an OAuth authorization code for access and refresh tokens.",
-  {
-    client_id: z.string().describe("CRM Marketplace app Client ID"),
-    client_secret: z.string().describe("CRM Marketplace app Client Secret"),
-    code: z.string().describe("Authorization code from OAuth callback"),
-    redirect_uri: z.string().describe("OAuth redirect URI (must match app config)")
-  },
-  async ({ client_id, client_secret, code, redirect_uri }) => {
-    const response = await fetch(TOKEN_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        client_id,
-        client_secret,
-        grant_type: "authorization_code",
-        code,
-        redirect_uri
-      })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      return { content: [{ type: "text", text: JSON.stringify({ error: "Token exchange failed", details: data }, null, 2) }] };
-    }
-
-    return {
-      content: [{
-        type: "text",
-        text: JSON.stringify({
-          access_token: data.access_token,
-          refresh_token: data.refresh_token,
-          expires_in: data.expires_in,
-          location_id: data.locationId,
-          company_id: data.companyId
-        }, null, 2)
-      }]
-    };
-  }
-);
-
-// ─── TOOL: crm_refresh_token ───────────────────────────────────────
-server.tool(
-  "crm_refresh_token",
-  "Refresh an expired CRM access token using a refresh token.",
-  {
-    client_id: z.string().describe("CRM Marketplace app Client ID"),
-    client_secret: z.string().describe("CRM Marketplace app Client Secret"),
-    refresh_token: z.string().describe("Refresh token from previous auth")
-  },
-  async ({ client_id, client_secret, refresh_token }) => {
-    const response = await fetch(TOKEN_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        client_id,
-        client_secret,
-        grant_type: "refresh_token",
-        refresh_token
-      })
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      return { content: [{ type: "text", text: JSON.stringify({ error: "Token refresh failed", details: data }, null, 2) }] };
-    }
-
-    return {
-      content: [{
-        type: "text",
-        text: JSON.stringify({
-          access_token: data.access_token,
-          refresh_token: data.refresh_token,
-          expires_in: data.expires_in,
-          location_id: data.locationId
-        }, null, 2)
-      }]
-    };
-  }
-);
-
-// ─── TOOL: crm_create_tags ─────────────────────────────────────────
-server.tool(
-  "crm_create_tags",
-  "Bulk create tags in a CRM sub-account.",
-  {
-    access_token: z.string().describe("CRM access token"),
-    location_id: z.string().describe("CRM sub-account location ID"),
-    tags: z.array(z.string()).describe("Array of tag names to create")
-  },
-  async ({ access_token, location_id, tags }) => {
-    const headers = crmHeaders(access_token);
-    const results = [];
-
-    for (const tag of tags) {
-      try {
-        const res = await fetch(`${CRM_API_BASE}/locations/${location_id}/tags`, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ name: tag })
-        });
-        const data = await res.json().catch(() => ({}));
-        results.push({ tag, status: res.ok ? "created" : "exists" });
-      } catch (err) {
-        results.push({ tag, status: "error", message: err.message });
-      }
-    }
-
-    return {
-      content: [{
-        type: "text",
-        text: JSON.stringify({
-          created: results.filter(r => r.status === "created").length,
-          total: tags.length,
-          results
-        }, null, 2)
-      }]
-    };
-  }
-);
-
-// ─── TOOL: crm_create_pipeline ─────────────────────────────────────
-server.tool(
-  "crm_create_pipeline",
-  "Create a pipeline with stages in a CRM sub-account.",
-  {
-    access_token: z.string().describe("CRM access token"),
-    location_id: z.string().describe("CRM sub-account location ID"),
-    pipeline_name: z.string().describe("Name for the pipeline"),
-    stages: z.array(z.string()).describe("Ordered array of stage names")
-  },
-  async ({ access_token, location_id, pipeline_name, stages }) => {
-    const headers = crmHeaders(access_token);
-
-    const pipelineBody = {
-      name: pipeline_name,
-      stages: stages.map((name, index) => ({ name, position: index }))
-    };
-
-    try {
-      const res = await fetch(`${CRM_API_BASE}/opportunities/pipelines`, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(pipelineBody)
-      });
-
-      const data = await res.json().catch(() => ({}));
-
+    if (result.success) {
       return {
         content: [{
           type: "text",
           text: JSON.stringify({
-            status: res.ok ? "created" : "failed",
-            pipeline_id: data.id || data.pipeline?.id,
-            pipeline_name,
-            stages_created: stages.length,
-            data
-          }, null, 2)
-        }]
+            status: "completed",
+            message: result.message,
+            steps_executed: result.details?.stepsExecuted || 0,
+            steps_successful: result.details?.stepsSuccessful || 0,
+            duration_ms: result.details?.duration || 0,
+            services_used: result.details?.servicesUsed || [],
+            plan: result.details?.plan || [],
+          }, null, 2),
+        }],
       };
-    } catch (err) {
-      return { content: [{ type: "text", text: JSON.stringify({ error: err.message }, null, 2) }] };
+    } else {
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({
+            status: "failed",
+            error: result.error,
+            suggestion: result.suggestion,
+            connected_services: result.connected_services,
+          }, null, 2),
+        }],
+      };
     }
   }
 );
 
-// ─── TOOL: crm_create_custom_values ────────────────────────────────
+// ─── connect_service ───────────────────────────────────────
 server.tool(
-  "crm_create_custom_values",
-  "Create custom values in a CRM sub-account.",
-  {
-    access_token: z.string().describe("CRM access token"),
-    location_id: z.string().describe("CRM sub-account location ID"),
-    custom_values: z.record(z.string()).describe("Key-value pairs of custom value names and their values")
-  },
-  async ({ access_token, location_id, custom_values }) => {
-    const headers = crmHeaders(access_token);
-    const results = [];
+  "connect_service",
+  `Connect a service so the orchestrator can use it. Each service requires specific credentials.
 
-    for (const [name, value] of Object.entries(custom_values)) {
-      try {
-        const res = await fetch(`${CRM_API_BASE}/locations/${location_id}/customValues`, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ name, value: value || "" })
-        });
-        const data = await res.json().catch(() => ({}));
-        results.push({ name, status: res.ok ? "created" : "exists" });
-      } catch (err) {
-        results.push({ name, status: "error", message: err.message });
-      }
+Examples:
+- Stripe: { "apiKey": "sk_live_..." }
+- SendGrid: { "apiKey": "SG..." }
+- Twilio: { "accountSid": "AC...", "authToken": "..." }
+- Slack: { "botToken": "xoxb-..." }
+- OpenAI: { "apiKey": "sk-..." }
+- GitHub: { "token": "ghp_..." }
+- Notion: { "apiKey": "ntn_..." }
+- Airtable: { "apiKey": "pat..." }
+- CRM: { "access_token": "..." }
+- HubSpot: { "accessToken": "..." }
+- Shopify: { "accessToken": "...", "store": "mystore" }
+- Supabase: { "apiKey": "...", "projectRef": "..." }`,
+  {
+    service: z.string().describe("Service key (e.g., stripe, sendgrid, twilio, slack, crm, github, notion, airtable, openai, shopify, hubspot, supabase, discord, linear, resend, calendly, google_calendar)"),
+    credentials: z.record(z.string()).describe("Service credentials as key-value pairs"),
+  },
+  async ({ service, credentials }) => {
+    const result = connections.connect(service, credentials);
+
+    if (result.success) {
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({
+            status: "connected",
+            service: result.service.name,
+            capabilities: result.service.capabilities,
+            message: `Connected to ${result.service.name}. You now have ${result.service.capabilities} capabilities available.`,
+          }, null, 2),
+        }],
+      };
+    } else {
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({ status: "failed", error: result.error }, null, 2),
+        }],
+      };
+    }
+  }
+);
+
+// ─── disconnect_service ────────────────────────────────────
+server.tool(
+  "disconnect_service",
+  "Disconnect a connected service. Removes stored credentials.",
+  {
+    service: z.string().describe("Service key to disconnect (e.g., stripe, sendgrid)"),
+  },
+  async ({ service }) => {
+    const result = connections.disconnect(service);
+    return {
+      content: [{
+        type: "text",
+        text: JSON.stringify({
+          status: result.success ? "disconnected" : "failed",
+          error: result.error,
+        }, null, 2),
+      }],
+    };
+  }
+);
+
+// ─── list_connections ──────────────────────────────────────
+server.tool(
+  "list_connections",
+  "List all connected services, their types, and capability counts.",
+  {},
+  async () => {
+    const connected = connections.list();
+
+    if (connected.length === 0) {
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({
+            count: 0,
+            services: [],
+            message: "No services connected. Use connect_service to add integrations.",
+          }, null, 2),
+        }],
+      };
     }
 
     return {
       content: [{
         type: "text",
         text: JSON.stringify({
-          created: results.filter(r => r.status === "created").length,
-          total: Object.keys(custom_values).length,
-          results
-        }, null, 2)
-      }]
+          count: connected.length,
+          services: connected,
+        }, null, 2),
+      }],
     };
   }
 );
 
-// ─── TOOL: crm_process_workflow ────────────────────────────────────
+// ─── list_available_services ───────────────────────────────
 server.tool(
-  "crm_process_workflow",
-  "Process a single workflow JSON definition. Creates tags and custom values from the workflow, returns the workflow JSON ready for builder injection.",
-  {
-    access_token: z.string().describe("CRM access token"),
-    location_id: z.string().describe("CRM sub-account location ID"),
-    workflow: z.object({
-      id: z.string().optional(),
-      name: z.string(),
-      trigger: z.any().optional(),
-      goal: z.any().optional(),
-      custom_values: z.record(z.string()).optional(),
-      actions: z.array(z.any())
-    }).describe("Workflow JSON definition")
-  },
-  async ({ access_token, location_id, workflow }) => {
-    const headers = crmHeaders(access_token);
+  "list_available_services",
+  "List all services that can be connected, grouped by category.",
+  {},
+  async () => {
+    const services = listServices();
+    const connected = new Set(connections.keys());
 
-    const tags = [];
-    for (const action of workflow.actions || []) {
-      if (action.type === "add_tag" && action.value) tags.push(action.value);
-    }
-
-    const tagResults = [];
-    for (const tag of [...new Set(tags)]) {
-      try {
-        const res = await fetch(`${CRM_API_BASE}/locations/${location_id}/tags`, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ name: tag })
-        });
-        tagResults.push({ tag, status: res.ok ? "created" : "exists" });
-      } catch (err) {
-        tagResults.push({ tag, status: "error", message: err.message });
-      }
-    }
-
-    const cvResults = [];
-    if (workflow.custom_values) {
-      for (const [name, value] of Object.entries(workflow.custom_values)) {
-        try {
-          const res = await fetch(`${CRM_API_BASE}/locations/${location_id}/customValues`, {
-            method: "POST",
-            headers,
-            body: JSON.stringify({ name, value: value || "" })
-          });
-          cvResults.push({ name, status: res.ok ? "created" : "exists" });
-        } catch (err) {
-          cvResults.push({ name, status: "error", message: err.message });
-        }
-      }
+    // Group by type
+    const grouped = {};
+    for (const svc of services) {
+      if (!grouped[svc.type]) grouped[svc.type] = [];
+      grouped[svc.type].push({
+        key: svc.key,
+        name: svc.name,
+        description: svc.description,
+        capabilities: svc.capabilityCount,
+        authType: svc.authType,
+        credentialKeys: svc.credentialKeys,
+        connected: connected.has(svc.key),
+      });
     }
 
     return {
       content: [{
         type: "text",
         text: JSON.stringify({
-          workflow_name: workflow.name,
-          workflow_id: workflow.id,
-          tags_processed: tagResults,
-          custom_values_processed: cvResults,
-          workflow_json: workflow,
-          status: "ready"
-        }, null, 2)
-      }]
+          total: services.length,
+          connected: connected.size,
+          services: grouped,
+        }, null, 2),
+      }],
     };
   }
 );
 
-// ─── TOOL: crm_deploy_snapshot ─────────────────────────────────────
+// ─── get_service_info ──────────────────────────────────────
 server.tool(
-  "crm_deploy_snapshot",
-  "Deploy a full snapshot to a CRM sub-account. Creates pipeline, tags, custom values, and processes all workflow definitions in a single operation.",
+  "get_service_info",
+  "Get detailed information about a specific service — capabilities, endpoints, and required credentials.",
   {
-    access_token: z.string().describe("CRM access token"),
-    location_id: z.string().describe("CRM sub-account location ID"),
-    snapshot: z.object({
-      pipeline: z.object({
-        name: z.string(),
-        stages: z.array(z.string())
-      }).optional(),
-      tags: z.array(z.string()).optional(),
-      custom_values: z.record(z.string()).optional(),
-      workflows: z.array(z.any()).optional()
-    }).describe("Full snapshot definition with pipeline, tags, custom values, and workflows")
+    service: z.string().describe("Service key (e.g., stripe, crm)"),
   },
-  async ({ access_token, location_id, snapshot }) => {
-    const headers = crmHeaders(access_token);
+  async ({ service }) => {
+    const catalog = getService(service);
+    if (!catalog) {
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({ error: `Unknown service: ${service}`, available: listServices().map(s => s.key) }, null, 2),
+        }],
+      };
+    }
 
-    const report = {
-      pipeline: null,
-      tags: [],
-      custom_values: [],
-      workflows: [],
-      errors: []
+    return {
+      content: [{
+        type: "text",
+        text: JSON.stringify({
+          key: service,
+          name: catalog.name,
+          type: catalog.type,
+          description: catalog.description,
+          authType: catalog.authType,
+          credentialKeys: catalog.credentialKeys,
+          connected: connections.isConnected(service),
+          capabilities: catalog.capabilities,
+          endpoints: Object.entries(catalog.endpoints).map(([key, ep]) => ({
+            name: key,
+            method: ep.method,
+            path: ep.path,
+          })),
+        }, null, 2),
+      }],
     };
+  }
+);
 
-    // 1. Pipeline
-    if (snapshot.pipeline) {
-      try {
-        const pBody = {
-          name: snapshot.pipeline.name,
-          stages: snapshot.pipeline.stages.map((name, index) => ({ name, position: index }))
-        };
-        const res = await fetch(`${CRM_API_BASE}/opportunities/pipelines`, {
-          method: "POST",
-          headers,
-          body: JSON.stringify(pBody)
-        });
-        const data = await res.json().catch(() => ({}));
-        report.pipeline = {
-          status: res.ok ? "created" : "failed",
-          name: snapshot.pipeline.name,
-          stages: snapshot.pipeline.stages.length,
-          id: data.id || data.pipeline?.id
-        };
-      } catch (err) {
-        report.errors.push({ step: "pipeline", message: err.message });
-      }
+// ─── api_call ──────────────────────────────────────────────
+server.tool(
+  "api_call",
+  "Make a direct API call to any connected service. For advanced use when you need fine-grained control beyond the execute tool.",
+  {
+    service: z.string().describe("Service key (e.g., stripe, sendgrid)"),
+    endpoint: z.string().describe("Endpoint name from the service catalog"),
+    params: z.record(z.any()).optional().describe("Parameters for the API call"),
+  },
+  async ({ service, endpoint, params }) => {
+    const catalog = getService(service);
+    if (!catalog) {
+      return { content: [{ type: "text", text: JSON.stringify({ error: `Unknown service: ${service}` }, null, 2) }] };
     }
 
-    // 2. Tags
-    if (snapshot.tags) {
-      for (const tag of snapshot.tags) {
-        try {
-          const res = await fetch(`${CRM_API_BASE}/locations/${location_id}/tags`, {
-            method: "POST",
-            headers,
-            body: JSON.stringify({ name: tag })
-          });
-          report.tags.push({ tag, status: res.ok ? "created" : "exists" });
-        } catch (err) {
-          report.tags.push({ tag, status: "error", message: err.message });
-        }
-      }
+    const ep = catalog.endpoints[endpoint];
+    if (!ep) {
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({ error: `Unknown endpoint: ${endpoint}`, available: Object.keys(catalog.endpoints) }, null, 2),
+        }],
+      };
     }
 
-    // 3. Custom values
-    if (snapshot.custom_values) {
-      for (const [name, value] of Object.entries(snapshot.custom_values)) {
-        try {
-          const res = await fetch(`${CRM_API_BASE}/locations/${location_id}/customValues`, {
-            method: "POST",
-            headers,
-            body: JSON.stringify({ name, value: value || "" })
-          });
-          report.custom_values.push({ name, status: res.ok ? "created" : "exists" });
-        } catch (err) {
-          report.custom_values.push({ name, status: "error", message: err.message });
-        }
-      }
+    const creds = connections.getCredentials(service);
+    if (!creds) {
+      return { content: [{ type: "text", text: JSON.stringify({ error: `Service ${service} not connected` }, null, 2) }] };
     }
 
-    // 4. Workflows
-    if (snapshot.workflows) {
-      for (const wf of snapshot.workflows) {
-        const wfReport = { id: wf.id, name: wf.name, tags_created: 0, custom_values_created: 0, status: "ready" };
+    try {
+      let url = catalog.baseUrl + ep.path;
+      const allParams = { ...creds, ...(params || {}) };
 
-        if (wf.actions) {
-          for (const action of wf.actions) {
-            if (action.type === "add_tag" && action.value) {
-              try {
-                const res = await fetch(`${CRM_API_BASE}/locations/${location_id}/tags`, {
-                  method: "POST",
-                  headers,
-                  body: JSON.stringify({ name: action.value })
-                });
-                if (res.ok) wfReport.tags_created++;
-              } catch {}
-            }
+      // Substitute path params
+      url = url.replace(/\{(\w+)\}/g, (_, key) => allParams[key] || `{${key}}`);
+
+      const headers = catalog.authHeader(creds);
+      const options = { method: ep.method, headers };
+
+      if (ep.method !== "GET" && params) {
+        const contentType = ep.contentType || "application/json";
+        if (contentType === "application/x-www-form-urlencoded") {
+          headers["Content-Type"] = "application/x-www-form-urlencoded";
+          const flat = {};
+          for (const [k, v] of Object.entries(params)) {
+            if (typeof v !== "object") flat[k] = String(v);
           }
+          options.body = new URLSearchParams(flat).toString();
+        } else {
+          headers["Content-Type"] = "application/json";
+          options.body = JSON.stringify(params);
         }
-
-        if (wf.custom_values) {
-          for (const [name, value] of Object.entries(wf.custom_values)) {
-            try {
-              const res = await fetch(`${CRM_API_BASE}/locations/${location_id}/customValues`, {
-                method: "POST",
-                headers,
-                body: JSON.stringify({ name, value: value || "" })
-              });
-              if (res.ok) wfReport.custom_values_created++;
-            } catch {}
-          }
-        }
-
-        report.workflows.push(wfReport);
       }
-    }
 
-    return {
-      content: [{
-        type: "text",
-        text: JSON.stringify({
-          status: "deployed",
-          location_id,
-          summary: {
-            pipeline: report.pipeline ? report.pipeline.status : "skipped",
-            tags_total: report.tags.length,
-            custom_values_total: report.custom_values.length,
-            workflows_processed: report.workflows.length,
-            errors: report.errors.length
-          },
-          report
-        }, null, 2)
-      }]
-    };
-  }
-);
+      if (ep.method === "GET" && params) {
+        const flat = {};
+        for (const [k, v] of Object.entries(params)) {
+          if (typeof v !== "object") flat[k] = String(v);
+        }
+        const qs = new URLSearchParams(flat).toString();
+        if (qs) url += (url.includes("?") ? "&" : "?") + qs;
+      }
 
-// ─── TOOL: crm_list_workflows ──────────────────────────────────────
-server.tool(
-  "crm_list_workflows",
-  "List all workflows in a CRM sub-account (read-only).",
-  {
-    access_token: z.string().describe("CRM access token"),
-    location_id: z.string().describe("CRM sub-account location ID")
-  },
-  async ({ access_token, location_id }) => {
-    const headers = crmHeaders(access_token);
-
-    try {
-      const res = await fetch(`${CRM_API_BASE}/workflows/?locationId=${location_id}`, {
-        method: "GET",
-        headers
-      });
-      const data = await res.json().catch(() => ({}));
+      const response = await fetch(url, options);
+      const data = await response.json().catch(() => ({ status: response.status, statusText: response.statusText }));
 
       return {
         content: [{
           type: "text",
-          text: JSON.stringify({
-            count: data.workflows?.length || 0,
-            workflows: (data.workflows || []).map(w => ({
-              id: w.id,
-              name: w.name,
-              status: w.status
-            }))
-          }, null, 2)
-        }]
+          text: JSON.stringify({ success: response.ok, status: response.status, data }, null, 2),
+        }],
       };
     } catch (err) {
       return { content: [{ type: "text", text: JSON.stringify({ error: err.message }, null, 2) }] };
@@ -517,43 +352,20 @@ server.tool(
   }
 );
 
-// ─── TOOL: crm_list_pipelines ──────────────────────────────────────
-server.tool(
-  "crm_list_pipelines",
-  "List all pipelines and their stages in a CRM sub-account.",
-  {
-    access_token: z.string().describe("CRM access token"),
-    location_id: z.string().describe("CRM sub-account location ID")
-  },
-  async ({ access_token, location_id }) => {
-    const headers = crmHeaders(access_token);
+// ============================================================
+// SERVICE-SPECIFIC TOOLS
+// ============================================================
 
-    try {
-      const res = await fetch(`${CRM_API_BASE}/opportunities/pipelines?locationId=${location_id}`, {
-        method: "GET",
-        headers
-      });
-      const data = await res.json().catch(() => ({}));
+// Register CRM tools (the first full integration)
+registerCrmTools(server, z);
 
-      return {
-        content: [{
-          type: "text",
-          text: JSON.stringify({
-            count: data.pipelines?.length || 0,
-            pipelines: (data.pipelines || []).map(p => ({
-              id: p.id,
-              name: p.name,
-              stages: (p.stages || []).map(s => ({ id: s.id, name: s.name, position: s.position }))
-            }))
-          }, null, 2)
-        }]
-      };
-    } catch (err) {
-      return { content: [{ type: "text", text: JSON.stringify({ error: err.message }, null, 2) }] };
-    }
-  }
-);
+// Future: registerStripeTools(server, z);
+// Future: registerSlackTools(server, z);
+// Future: registerShopifyTools(server, z);
 
-// ─── START SERVER ──────────────────────────────────────────────────
+// ============================================================
+// START SERVER
+// ============================================================
+
 const transport = new StdioServerTransport();
 await server.connect(transport);

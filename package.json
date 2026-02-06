@@ -1,20 +1,61 @@
 {
-  "name": "@rocketopp/0nmcp",
+  "name": "0nmcp",
   "version": "1.0.0",
-  "description": "Rocket CRM Automation MCP Server — deploy pipelines, tags, workflows, and full snapshots via AI agents.",
+  "description": "Universal AI-powered API orchestrator for MCP. Connect services, describe tasks, AI handles the rest.",
   "main": "index.js",
   "bin": {
     "0nmcp": "./index.js"
   },
   "scripts": {
-    "start": "node index.js",
-    "dev": "node index.js"
+    "start": "node index.js"
   },
-  "keywords": ["mcp", "crm", "automation", "rocket", "pipeline", "workflows"],
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "orchestrator",
+    "ai",
+    "automation",
+    "api",
+    "claude",
+    "anthropic",
+    "stripe",
+    "sendgrid",
+    "twilio",
+    "slack",
+    "airtable",
+    "notion",
+    "github",
+    "shopify",
+    "crm",
+    "open-source"
+  ],
   "author": "RocketOpp",
-  "license": "UNLICENSED",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Crypto-Goatz/0nMCP"
+  },
+  "homepage": "https://github.com/Crypto-Goatz/0nMCP",
+  "bugs": {
+    "url": "https://github.com/Crypto-Goatz/0nMCP/issues"
+  },
   "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.26.0"
-  }
+  },
+  "optionalDependencies": {
+    "@anthropic-ai/sdk": "^0.30.0"
+  },
+  "files": [
+    "index.js",
+    "catalog.js",
+    "connections.js",
+    "orchestrator.js",
+    "crm.js",
+    "README.md",
+    "LICENSE"
+  ]
 }
