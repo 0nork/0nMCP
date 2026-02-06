@@ -431,6 +431,30 @@ MIT License — do whatever you want with it. See [LICENSE](LICENSE).
 
 ---
 
+## The 0n Network
+
+0nMCP is part of the **0n Network** — an open ecosystem of AI-native tools built by [RocketOpp](https://rocketopp.com).
+
+| | |
+|---|---|
+| **[RocketOpp](https://rocketopp.com)** | The agency behind the 0n Network. We build AI-powered systems that replace manual operations for businesses — automation, orchestration, and intelligent infrastructure at scale. |
+| **[Rocket+MCP](https://rocketadd.com)** | Our flagship MCP platform. A universal control layer that connects AI agents to the tools businesses already use — CRM, payments, email, scheduling, and more. The commercial backbone that powers 0nMCP. |
+| **[0n Network](https://github.com/0nork)** | The open-source arm. Every core tool we build gets released here. We believe the orchestration layer should be open, composable, and owned by the community. |
+
+### Support the Network
+
+0nMCP is free and always will be. If it saves you time or money, consider funding the expansion of the 0n Network:
+
+<div align="center">
+
+**[Sponsor on GitHub](https://github.com/sponsors/0nork)**
+
+Every dollar goes directly toward building more open-source MCP tools, adding integrations, and keeping the network growing.
+
+</div>
+
+---
+
 ## Credits
 
 Built on:
@@ -447,7 +471,7 @@ Built on:
 
 ---
 
-Made with conviction by [RocketOpp](https://github.com/0nork)
+Made with conviction by [RocketOpp](https://rocketopp.com) · [Rocket+MCP](https://rocketadd.com) · [0n Network](https://github.com/0nork)
 
 *"The best automation is the one you don't have to build."*
 
