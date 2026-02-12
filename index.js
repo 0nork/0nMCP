@@ -113,9 +113,18 @@ Examples:
 - CRM: { "access_token": "..." }
 - HubSpot: { "accessToken": "..." }
 - Shopify: { "accessToken": "...", "store": "mystore" }
-- Supabase: { "apiKey": "...", "projectRef": "..." }`,
+- Supabase: { "apiKey": "...", "projectRef": "..." }
+- Gmail: { "access_token": "..." }
+- Google Sheets: { "access_token": "..." }
+- Google Drive: { "access_token": "..." }
+- Jira: { "email": "...", "apiToken": "...", "domain": "mycompany" }
+- Zendesk: { "email": "...", "apiToken": "...", "subdomain": "mycompany" }
+- Mailchimp: { "apiKey": "...-us21" }
+- Zoom: { "access_token": "..." }
+- Microsoft 365: { "access_token": "..." }
+- MongoDB: { "apiKey": "...", "appId": "..." }`,
   {
-    service: z.string().describe("Service key (e.g., stripe, sendgrid, twilio, slack, crm, github, notion, airtable, openai, shopify, hubspot, supabase, discord, linear, resend, calendly, google_calendar)"),
+    service: z.string().describe("Service key (e.g., stripe, sendgrid, twilio, slack, crm, github, notion, airtable, openai, shopify, hubspot, supabase, discord, linear, resend, calendly, google_calendar, gmail, google_sheets, google_drive, jira, zendesk, mailchimp, zoom, microsoft, mongodb)"),
     credentials: z.record(z.string()).describe("Service credentials as key-value pairs"),
   },
   async ({ service, credentials }) => {

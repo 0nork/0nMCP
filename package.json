@@ -1,8 +1,8 @@
 {
   "name": "0nmcp",
-  "version": "1.2.2",
+  "version": "1.3.0",
   "mcpName": "io.github.0nork/0nMCP",
-  "description": "Universal AI API Orchestrator — 180 tools, 17 services, natural language interface. The most comprehensive MCP server available. Free and open source from 0nORK.",
+  "description": "Universal AI API Orchestrator — 535 tools, 26 services, natural language interface. The most comprehensive MCP server available. Free and open source from 0nORK.",
   "type": "module",
   "main": "index.js",
   "types": "types/index.d.ts",
@@ -86,6 +86,18 @@
     "social-media",
     "webhooks",
     "rate-limiting",
+    "gmail",
+    "google-sheets",
+    "google-drive",
+    "jira",
+    "zendesk",
+    "mailchimp",
+    "zoom",
+    "microsoft-365",
+    "outlook",
+    "teams",
+    "onedrive",
+    "mongodb",
     "0n",
     "0nork",
     "0nmcp"
@@ -123,17 +135,20 @@
     "crm/",
     "webhooks.js",
     "ratelimit.js",
+    "lib/",
     "types/",
     "README.md",
     "LICENSE"
   ],
   "0nmcp-stats": {
-    "tools": 180,
-    "services": 17,
-    "actions": 39,
-    "triggers": 58,
-    "totalCapabilities": 277,
-    "categories": 10,
-    "lastUpdated": "2026-02-12T02:10:25.448Z"
+    "tools": 290,
+    "crmTools": 245,
+    "totalTools": 535,
+    "services": 26,
+    "actions": 66,
+    "triggers": 93,
+    "totalCapabilities": 694,
+    "categories": 13,
+    "lastUpdated": "2026-02-12T00:00:00.000Z"
   }
 }

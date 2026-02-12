@@ -505,6 +505,294 @@
         "event_reminder"
       ],
       "rateLimit": { "requests": 100, "window": 60 }
+    },
+    {
+      "id": "gmail",
+      "name": "Gmail",
+      "category": "email",
+      "description": "Email, threads, labels, drafts, search",
+      "tools": [
+        "gmail_send_email",
+        "gmail_list_messages",
+        "gmail_get_message",
+        "gmail_trash_message",
+        "gmail_untrash_message",
+        "gmail_list_threads",
+        "gmail_get_thread",
+        "gmail_create_draft",
+        "gmail_list_drafts",
+        "gmail_send_draft",
+        "gmail_list_labels",
+        "gmail_create_label",
+        "gmail_get_profile",
+        "gmail_search"
+      ],
+      "actions": [
+        "email_digest",
+        "label_organizer",
+        "auto_responder"
+      ],
+      "triggers": [
+        "email_received",
+        "email_sent",
+        "label_applied"
+      ],
+      "rateLimit": { "requests": 100, "window": 60 }
+    },
+    {
+      "id": "google_sheets",
+      "name": "Google Sheets",
+      "category": "database",
+      "description": "Spreadsheets, cell values, formulas, batch operations",
+      "tools": [
+        "gsheets_create_spreadsheet",
+        "gsheets_get_spreadsheet",
+        "gsheets_get_values",
+        "gsheets_update_values",
+        "gsheets_append_values",
+        "gsheets_clear_values",
+        "gsheets_batch_get",
+        "gsheets_batch_update",
+        "gsheets_add_sheet",
+        "gsheets_delete_sheet"
+      ],
+      "actions": [
+        "sheet_sync",
+        "data_export",
+        "report_generate"
+      ],
+      "triggers": [
+        "row_added",
+        "cell_updated",
+        "sheet_created"
+      ],
+      "rateLimit": { "requests": 60, "window": 60 }
+    },
+    {
+      "id": "google_drive",
+      "name": "Google Drive",
+      "category": "storage",
+      "description": "Files, folders, sharing, permissions, search",
+      "tools": [
+        "gdrive_list_files",
+        "gdrive_get_file",
+        "gdrive_create_file",
+        "gdrive_copy_file",
+        "gdrive_update_file",
+        "gdrive_delete_file",
+        "gdrive_create_permission",
+        "gdrive_list_permissions",
+        "gdrive_delete_permission",
+        "gdrive_search",
+        "gdrive_create_folder"
+      ],
+      "actions": [
+        "backup_files",
+        "share_batch",
+        "cleanup_old_files"
+      ],
+      "triggers": [
+        "file_created",
+        "file_modified",
+        "permission_changed"
+      ],
+      "rateLimit": { "requests": 100, "window": 60 }
+    },
+    {
+      "id": "jira",
+      "name": "Jira",
+      "category": "devtools",
+      "description": "Issues, sprints, boards, projects, JQL search",
+      "tools": [
+        "jira_search_issues",
+        "jira_create_issue",
+        "jira_get_issue",
+        "jira_update_issue",
+        "jira_delete_issue",
+        "jira_transition_issue",
+        "jira_get_transitions",
+        "jira_add_comment",
+        "jira_list_comments",
+        "jira_list_projects",
+        "jira_get_project",
+        "jira_assign_issue",
+        "jira_add_watcher",
+        "jira_list_sprints",
+        "jira_get_board"
+      ],
+      "actions": [
+        "sprint_report",
+        "issue_triage",
+        "backlog_cleanup"
+      ],
+      "triggers": [
+        "issue_created",
+        "issue_updated",
+        "issue_transitioned",
+        "sprint_started",
+        "sprint_completed"
+      ],
+      "rateLimit": { "requests": 100, "window": 60 }
+    },
+    {
+      "id": "zendesk",
+      "name": "Zendesk",
+      "category": "support",
+      "description": "Tickets, users, organizations, search, macros",
+      "tools": [
+        "zendesk_list_tickets",
+        "zendesk_get_ticket",
+        "zendesk_create_ticket",
+        "zendesk_update_ticket",
+        "zendesk_delete_ticket",
+        "zendesk_list_ticket_comments",
+        "zendesk_add_comment",
+        "zendesk_search",
+        "zendesk_list_users",
+        "zendesk_create_user",
+        "zendesk_get_user",
+        "zendesk_list_organizations",
+        "zendesk_list_macros",
+        "zendesk_get_ticket_metrics"
+      ],
+      "actions": [
+        "ticket_report",
+        "sla_monitor",
+        "auto_assign"
+      ],
+      "triggers": [
+        "ticket_created",
+        "ticket_updated",
+        "ticket_solved",
+        "ticket_overdue",
+        "satisfaction_rated"
+      ],
+      "rateLimit": { "requests": 100, "window": 60 }
+    },
+    {
+      "id": "mailchimp",
+      "name": "Mailchimp",
+      "category": "marketing",
+      "description": "Audiences, campaigns, automations, templates, analytics",
+      "tools": [
+        "mailchimp_list_audiences",
+        "mailchimp_get_audience",
+        "mailchimp_add_member",
+        "mailchimp_update_member",
+        "mailchimp_list_members",
+        "mailchimp_search_members",
+        "mailchimp_list_campaigns",
+        "mailchimp_create_campaign",
+        "mailchimp_send_campaign",
+        "mailchimp_get_campaign_report",
+        "mailchimp_list_templates",
+        "mailchimp_list_automations"
+      ],
+      "actions": [
+        "campaign_report",
+        "audience_sync",
+        "bounce_cleanup"
+      ],
+      "triggers": [
+        "subscriber_added",
+        "subscriber_unsubscribed",
+        "campaign_sent",
+        "email_opened",
+        "email_clicked"
+      ],
+      "rateLimit": { "requests": 10, "window": 1 }
+    },
+    {
+      "id": "zoom",
+      "name": "Zoom",
+      "category": "communication",
+      "description": "Meetings, recordings, webinars, users",
+      "tools": [
+        "zoom_list_meetings",
+        "zoom_create_meeting",
+        "zoom_get_meeting",
+        "zoom_update_meeting",
+        "zoom_delete_meeting",
+        "zoom_list_recordings",
+        "zoom_get_recording",
+        "zoom_delete_recording",
+        "zoom_list_users",
+        "zoom_get_user"
+      ],
+      "actions": [
+        "meeting_report",
+        "recording_export"
+      ],
+      "triggers": [
+        "meeting_started",
+        "meeting_ended",
+        "recording_completed",
+        "participant_joined"
+      ],
+      "rateLimit": { "requests": 30, "window": 1 }
+    },
+    {
+      "id": "microsoft",
+      "name": "Microsoft 365",
+      "category": "productivity",
+      "description": "Outlook mail, Teams, OneDrive, calendar via Graph API",
+      "tools": [
+        "ms_send_mail",
+        "ms_list_messages",
+        "ms_get_message",
+        "ms_delete_message",
+        "ms_list_events",
+        "ms_create_event",
+        "ms_update_event",
+        "ms_delete_event",
+        "ms_list_drive_items",
+        "ms_get_drive_item",
+        "ms_search_drive",
+        "ms_list_teams",
+        "ms_list_channels",
+        "ms_send_channel_message",
+        "ms_get_user"
+      ],
+      "actions": [
+        "mail_digest",
+        "calendar_sync",
+        "file_backup"
+      ],
+      "triggers": [
+        "mail_received",
+        "event_created",
+        "file_modified",
+        "teams_message_received"
+      ],
+      "rateLimit": { "requests": 100, "window": 60 }
+    },
+    {
+      "id": "mongodb",
+      "name": "MongoDB",
+      "category": "database",
+      "description": "NoSQL documents, queries, aggregation via Atlas Data API",
+      "tools": [
+        "mongodb_find_one",
+        "mongodb_find_many",
+        "mongodb_insert_one",
+        "mongodb_insert_many",
+        "mongodb_update_one",
+        "mongodb_update_many",
+        "mongodb_delete_one",
+        "mongodb_aggregate",
+        "mongodb_count"
+      ],
+      "actions": [
+        "data_export",
+        "collection_sync",
+        "index_optimize"
+      ],
+      "triggers": [
+        "document_inserted",
+        "document_updated",
+        "document_deleted"
+      ],
+      "rateLimit": { "requests": 100, "window": 1 }
     }
   ],
   "categories": {
@@ -517,6 +805,9 @@
     "productivity": { "label": "Productivity", "icon": "layout" },
     "devtools": { "label": "Dev Tools", "icon": "code" },
     "ecommerce": { "label": "E-Commerce", "icon": "shopping-cart" },
-    "scheduling": { "label": "Scheduling", "icon": "calendar" }
+    "scheduling": { "label": "Scheduling", "icon": "calendar" },
+    "storage": { "label": "Storage", "icon": "hard-drive" },
+    "support": { "label": "Support", "icon": "headphones" },
+    "marketing": { "label": "Marketing", "icon": "megaphone" }
   }
 }

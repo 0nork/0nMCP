@@ -461,6 +461,306 @@ export const SERVICE_CATALOG = {
     }),
   },
 
+  // ── Gmail ───────────────────────────────────────────────────
+  gmail: {
+    name: "Gmail",
+    type: "email",
+    description: "Email — send, receive, labels, threads, drafts, search",
+    baseUrl: "https://gmail.googleapis.com/gmail/v1",
+    authType: "oauth",
+    credentialKeys: ["access_token"],
+    capabilities: [
+      { name: "send_email", actions: ["send"], description: "Send emails" },
+      { name: "manage_messages", actions: ["list", "get", "delete", "trash"], description: "Read, search, and manage messages" },
+      { name: "manage_drafts", actions: ["create", "list", "send"], description: "Create and manage drafts" },
+      { name: "manage_labels", actions: ["list", "create", "update"], description: "Organize with labels" },
+      { name: "manage_threads", actions: ["list", "get"], description: "View conversation threads" },
+    ],
+    endpoints: {
+      list_messages:    { method: "GET",  path: "/users/me/messages", query: ["q", "maxResults", "labelIds", "pageToken"] },
+      get_message:      { method: "GET",  path: "/users/me/messages/{messageId}", query: ["format"] },
+      send_message:     { method: "POST", path: "/users/me/messages/send", body: { raw: "" } },
+      trash_message:    { method: "POST", path: "/users/me/messages/{messageId}/trash" },
+      untrash_message:  { method: "POST", path: "/users/me/messages/{messageId}/untrash" },
+      list_threads:     { method: "GET",  path: "/users/me/threads", query: ["q", "maxResults", "pageToken"] },
+      get_thread:       { method: "GET",  path: "/users/me/threads/{threadId}" },
+      create_draft:     { method: "POST", path: "/users/me/drafts", body: { message: { raw: "" } } },
+      list_drafts:      { method: "GET",  path: "/users/me/drafts" },
+      send_draft:       { method: "POST", path: "/users/me/drafts/send", body: { id: "" } },
+      list_labels:      { method: "GET",  path: "/users/me/labels" },
+      create_label:     { method: "POST", path: "/users/me/labels", body: { name: "" } },
+      get_profile:      { method: "GET",  path: "/users/me/profile" },
+    },
+    authHeader: (creds) => ({
+      "Authorization": `Bearer ${creds.access_token}`,
+      "Content-Type": "application/json",
+    }),
+  },
+
+  // ── Google Sheets ───────────────────────────────────────────
+  google_sheets: {
+    name: "Google Sheets",
+    type: "database",
+    description: "Spreadsheets — read, write, append, create, format cells",
+    baseUrl: "https://sheets.googleapis.com/v4",
+    authType: "oauth",
+    credentialKeys: ["access_token"],
+    capabilities: [
+      { name: "manage_spreadsheets", actions: ["create", "get"], description: "Create and get spreadsheet metadata" },
+      { name: "manage_values", actions: ["get", "update", "append", "clear"], description: "Read, write, and append cell values" },
+      { name: "manage_sheets", actions: ["create", "delete"], description: "Add and remove sheets within a spreadsheet" },
+    ],
+    endpoints: {
+      create_spreadsheet:   { method: "POST", path: "/spreadsheets", body: { properties: { title: "" } } },
+      get_spreadsheet:      { method: "GET",  path: "/spreadsheets/{spreadsheetId}" },
+      get_values:           { method: "GET",  path: "/spreadsheets/{spreadsheetId}/values/{range}" },
+      update_values:        { method: "PUT",  path: "/spreadsheets/{spreadsheetId}/values/{range}", query: ["valueInputOption"], body: { values: [] } },
+      append_values:        { method: "POST", path: "/spreadsheets/{spreadsheetId}/values/{range}:append", query: ["valueInputOption"], body: { values: [] } },
+      clear_values:         { method: "POST", path: "/spreadsheets/{spreadsheetId}/values/{range}:clear" },
+      batch_get:            { method: "GET",  path: "/spreadsheets/{spreadsheetId}/values:batchGet", query: ["ranges"] },
+      batch_update:         { method: "POST", path: "/spreadsheets/{spreadsheetId}/values:batchUpdate", body: { data: [], valueInputOption: "USER_ENTERED" } },
+    },
+    authHeader: (creds) => ({
+      "Authorization": `Bearer ${creds.access_token}`,
+      "Content-Type": "application/json",
+    }),
+  },
+
+  // ── Google Drive ────────────────────────────────────────────
+  google_drive: {
+    name: "Google Drive",
+    type: "storage",
+    description: "Cloud storage — files, folders, sharing, search, permissions",
+    baseUrl: "https://www.googleapis.com/drive/v3",
+    authType: "oauth",
+    credentialKeys: ["access_token"],
+    capabilities: [
+      { name: "manage_files", actions: ["list", "get", "create", "delete", "copy"], description: "Upload, download, and manage files" },
+      { name: "manage_permissions", actions: ["create", "list", "delete"], description: "Share files and manage access" },
+      { name: "search_files", actions: ["search"], description: "Search across Drive" },
+    ],
+    endpoints: {
+      list_files:           { method: "GET",  path: "/files", query: ["q", "pageSize", "orderBy", "fields", "pageToken"] },
+      get_file:             { method: "GET",  path: "/files/{fileId}", query: ["fields"] },
+      create_file:          { method: "POST", path: "/files", body: { name: "", mimeType: "", parents: [] } },
+      copy_file:            { method: "POST", path: "/files/{fileId}/copy", body: { name: "" } },
+      update_file:          { method: "PATCH", path: "/files/{fileId}", body: { name: "" } },
+      delete_file:          { method: "DELETE", path: "/files/{fileId}" },
+      create_permission:    { method: "POST", path: "/files/{fileId}/permissions", body: { role: "", type: "", emailAddress: "" } },
+      list_permissions:     { method: "GET",  path: "/files/{fileId}/permissions" },
+      delete_permission:    { method: "DELETE", path: "/files/{fileId}/permissions/{permissionId}" },
+      generate_ids:         { method: "GET",  path: "/files/generateIds", query: ["count"] },
+    },
+    authHeader: (creds) => ({
+      "Authorization": `Bearer ${creds.access_token}`,
+      "Content-Type": "application/json",
+    }),
+  },
+
+  // ── Jira ────────────────────────────────────────────────────
+  jira: {
+    name: "Jira",
+    type: "project",
+    description: "Project management — issues, sprints, boards, projects, epics, JQL search",
+    baseUrl: "https://{domain}.atlassian.net/rest/api/3",
+    authType: "basic",
+    credentialKeys: ["email", "apiToken", "domain"],
+    capabilities: [
+      { name: "manage_issues", actions: ["create", "get", "update", "delete", "search", "transition"], description: "Full issue lifecycle management" },
+      { name: "manage_projects", actions: ["list", "get"], description: "List and view projects" },
+      { name: "manage_sprints", actions: ["list"], description: "View sprints and boards" },
+      { name: "manage_comments", actions: ["create", "list"], description: "Add and view issue comments" },
+    ],
+    endpoints: {
+      search_issues:        { method: "POST", path: "/search", body: { jql: "", maxResults: 50 } },
+      create_issue:         { method: "POST", path: "/issue", body: { fields: { project: {}, summary: "", issuetype: {}, description: {} } } },
+      get_issue:            { method: "GET",  path: "/issue/{issueIdOrKey}", query: ["fields", "expand"] },
+      update_issue:         { method: "PUT",  path: "/issue/{issueIdOrKey}", body: { fields: {} } },
+      delete_issue:         { method: "DELETE", path: "/issue/{issueIdOrKey}" },
+      transition_issue:     { method: "POST", path: "/issue/{issueIdOrKey}/transitions", body: { transition: { id: "" } } },
+      get_transitions:      { method: "GET",  path: "/issue/{issueIdOrKey}/transitions" },
+      add_comment:          { method: "POST", path: "/issue/{issueIdOrKey}/comment", body: { body: {} } },
+      list_comments:        { method: "GET",  path: "/issue/{issueIdOrKey}/comment" },
+      list_projects:        { method: "GET",  path: "/project", query: ["maxResults", "startAt"] },
+      get_project:          { method: "GET",  path: "/project/{projectIdOrKey}" },
+      assign_issue:         { method: "PUT",  path: "/issue/{issueIdOrKey}/assignee", body: { accountId: "" } },
+    },
+    authHeader: (creds) => ({
+      "Authorization": "Basic " + Buffer.from(`${creds.email}:${creds.apiToken}`).toString("base64"),
+      "Content-Type": "application/json",
+    }),
+  },
+
+  // ── Zendesk ─────────────────────────────────────────────────
+  zendesk: {
+    name: "Zendesk",
+    type: "support",
+    description: "Customer support — tickets, users, organizations, search, macros",
+    baseUrl: "https://{subdomain}.zendesk.com/api/v2",
+    authType: "basic",
+    credentialKeys: ["email", "apiToken", "subdomain"],
+    capabilities: [
+      { name: "manage_tickets", actions: ["create", "list", "get", "update", "delete"], description: "Full ticket lifecycle" },
+      { name: "manage_users", actions: ["create", "list", "search"], description: "Manage end-users and agents" },
+      { name: "manage_organizations", actions: ["list", "get"], description: "View organizations" },
+      { name: "search", actions: ["search"], description: "Full-text search across tickets, users, orgs" },
+    ],
+    endpoints: {
+      list_tickets:         { method: "GET",  path: "/tickets.json", query: ["page", "per_page", "sort_by", "sort_order"] },
+      get_ticket:           { method: "GET",  path: "/tickets/{ticketId}.json" },
+      create_ticket:        { method: "POST", path: "/tickets.json", body: { ticket: { subject: "", description: "", priority: "" } } },
+      update_ticket:        { method: "PUT",  path: "/tickets/{ticketId}.json", body: { ticket: {} } },
+      delete_ticket:        { method: "DELETE", path: "/tickets/{ticketId}.json" },
+      list_ticket_comments: { method: "GET",  path: "/tickets/{ticketId}/comments.json" },
+      search:               { method: "GET",  path: "/search.json", query: ["query", "sort_by", "sort_order"] },
+      list_users:           { method: "GET",  path: "/users.json", query: ["role", "page", "per_page"] },
+      create_user:          { method: "POST", path: "/users.json", body: { user: { name: "", email: "" } } },
+      get_user:             { method: "GET",  path: "/users/{userId}.json" },
+      list_organizations:   { method: "GET",  path: "/organizations.json" },
+      list_macros:          { method: "GET",  path: "/macros.json" },
+    },
+    authHeader: (creds) => ({
+      "Authorization": "Basic " + Buffer.from(`${creds.email}/token:${creds.apiToken}`).toString("base64"),
+      "Content-Type": "application/json",
+    }),
+  },
+
+  // ── Mailchimp ───────────────────────────────────────────────
+  mailchimp: {
+    name: "Mailchimp",
+    type: "marketing",
+    description: "Email marketing — audiences, campaigns, automations, templates, analytics",
+    baseUrl: "https://{dc}.api.mailchimp.com/3.0",
+    authType: "api_key",
+    credentialKeys: ["apiKey"],
+    capabilities: [
+      { name: "manage_audiences", actions: ["list", "get"], description: "View and manage audiences/lists" },
+      { name: "manage_members", actions: ["create", "update", "list", "search"], description: "Add and manage subscribers" },
+      { name: "manage_campaigns", actions: ["create", "list", "send"], description: "Create and send email campaigns" },
+      { name: "manage_templates", actions: ["list"], description: "View email templates" },
+    ],
+    endpoints: {
+      list_audiences:       { method: "GET",  path: "/lists", query: ["count", "offset"] },
+      get_audience:         { method: "GET",  path: "/lists/{listId}" },
+      add_member:           { method: "POST", path: "/lists/{listId}/members", body: { email_address: "", status: "subscribed" } },
+      update_member:        { method: "PATCH", path: "/lists/{listId}/members/{subscriberHash}", body: {} },
+      list_members:         { method: "GET",  path: "/lists/{listId}/members", query: ["count", "offset", "status"] },
+      search_members:       { method: "GET",  path: "/search-members", query: ["query", "list_id"] },
+      list_campaigns:       { method: "GET",  path: "/campaigns", query: ["count", "offset", "status", "type"] },
+      create_campaign:      { method: "POST", path: "/campaigns", body: { type: "regular", recipients: {}, settings: {} } },
+      send_campaign:        { method: "POST", path: "/campaigns/{campaignId}/actions/send" },
+      get_campaign_report:  { method: "GET",  path: "/reports/{campaignId}" },
+      list_templates:       { method: "GET",  path: "/templates", query: ["count", "type"] },
+      list_automations:     { method: "GET",  path: "/automations" },
+    },
+    authHeader: (creds) => {
+      const dc = creds.apiKey.split("-").pop();
+      return {
+        "Authorization": "Basic " + Buffer.from(`anystring:${creds.apiKey}`).toString("base64"),
+        "Content-Type": "application/json",
+      };
+    },
+  },
+
+  // ── Zoom ────────────────────────────────────────────────────
+  zoom: {
+    name: "Zoom",
+    type: "communication",
+    description: "Video conferencing — meetings, webinars, recordings, users",
+    baseUrl: "https://api.zoom.us/v2",
+    authType: "oauth",
+    credentialKeys: ["access_token"],
+    capabilities: [
+      { name: "manage_meetings", actions: ["create", "list", "get", "update", "delete"], description: "Schedule and manage meetings" },
+      { name: "manage_recordings", actions: ["list", "get", "delete"], description: "Access meeting recordings" },
+      { name: "manage_users", actions: ["list", "get"], description: "View Zoom users" },
+      { name: "manage_webinars", actions: ["list", "create"], description: "Schedule webinars" },
+    ],
+    endpoints: {
+      list_meetings:        { method: "GET",  path: "/users/{userId}/meetings", query: ["type", "page_size", "page_number"] },
+      create_meeting:       { method: "POST", path: "/users/{userId}/meetings", body: { topic: "", type: 2, start_time: "", duration: 60 } },
+      get_meeting:          { method: "GET",  path: "/meetings/{meetingId}" },
+      update_meeting:       { method: "PATCH", path: "/meetings/{meetingId}", body: {} },
+      delete_meeting:       { method: "DELETE", path: "/meetings/{meetingId}" },
+      list_recordings:      { method: "GET",  path: "/users/{userId}/recordings", query: ["from", "to", "page_size"] },
+      get_recording:        { method: "GET",  path: "/meetings/{meetingId}/recordings" },
+      delete_recording:     { method: "DELETE", path: "/meetings/{meetingId}/recordings" },
+      list_users:           { method: "GET",  path: "/users", query: ["status", "page_size", "page_number"] },
+      get_user:             { method: "GET",  path: "/users/{userId}" },
+    },
+    authHeader: (creds) => ({
+      "Authorization": `Bearer ${creds.access_token}`,
+      "Content-Type": "application/json",
+    }),
+  },
+
+  // ── Microsoft Graph (Outlook, Teams, OneDrive) ──────────────
+  microsoft: {
+    name: "Microsoft 365",
+    type: "productivity",
+    description: "Outlook mail, Teams messages, OneDrive files, calendar — via Microsoft Graph API",
+    baseUrl: "https://graph.microsoft.com/v1.0",
+    authType: "oauth",
+    credentialKeys: ["access_token"],
+    capabilities: [
+      { name: "manage_mail", actions: ["send", "list", "get", "delete"], description: "Send and manage Outlook email" },
+      { name: "manage_events", actions: ["create", "list", "update", "delete"], description: "Manage Outlook calendar events" },
+      { name: "manage_files", actions: ["list", "get", "upload"], description: "OneDrive file management" },
+      { name: "manage_teams", actions: ["send", "list"], description: "Send Teams messages and list channels" },
+      { name: "manage_users", actions: ["list", "get"], description: "View organization users" },
+    ],
+    endpoints: {
+      send_mail:            { method: "POST", path: "/me/sendMail", body: { message: { subject: "", body: {}, toRecipients: [] } } },
+      list_messages:        { method: "GET",  path: "/me/messages", query: ["$top", "$skip", "$filter", "$select", "$orderby"] },
+      get_message:          { method: "GET",  path: "/me/messages/{messageId}" },
+      delete_message:       { method: "DELETE", path: "/me/messages/{messageId}" },
+      list_events:          { method: "GET",  path: "/me/events", query: ["$top", "$filter", "$orderby"] },
+      create_event:         { method: "POST", path: "/me/events", body: { subject: "", start: {}, end: {}, attendees: [] } },
+      update_event:         { method: "PATCH", path: "/me/events/{eventId}", body: {} },
+      delete_event:         { method: "DELETE", path: "/me/events/{eventId}" },
+      list_drive_items:     { method: "GET",  path: "/me/drive/root/children" },
+      get_drive_item:       { method: "GET",  path: "/me/drive/items/{itemId}" },
+      search_drive:         { method: "GET",  path: "/me/drive/root/search(q='{query}')" },
+      list_teams:           { method: "GET",  path: "/me/joinedTeams" },
+      list_channels:        { method: "GET",  path: "/teams/{teamId}/channels" },
+      send_channel_message: { method: "POST", path: "/teams/{teamId}/channels/{channelId}/messages", body: { body: { content: "" } } },
+      get_user:             { method: "GET",  path: "/me" },
+    },
+    authHeader: (creds) => ({
+      "Authorization": `Bearer ${creds.access_token}`,
+      "Content-Type": "application/json",
+    }),
+  },
+
+  // ── MongoDB Atlas ───────────────────────────────────────────
+  mongodb: {
+    name: "MongoDB",
+    type: "database",
+    description: "NoSQL database — find, insert, update, delete, aggregate via Atlas Data API",
+    baseUrl: "https://data.mongodb-api.com/app/{appId}/endpoint/data/v1",
+    authType: "api_key",
+    credentialKeys: ["apiKey", "appId"],
+    capabilities: [
+      { name: "manage_documents", actions: ["find", "insert", "update", "delete"], description: "CRUD operations on documents" },
+      { name: "aggregate", actions: ["aggregate"], description: "Run aggregation pipelines" },
+    ],
+    endpoints: {
+      find_one:             { method: "POST", path: "/action/findOne", body: { dataSource: "", database: "", collection: "", filter: {} } },
+      find_many:            { method: "POST", path: "/action/find", body: { dataSource: "", database: "", collection: "", filter: {}, limit: 100 } },
+      insert_one:           { method: "POST", path: "/action/insertOne", body: { dataSource: "", database: "", collection: "", document: {} } },
+      insert_many:          { method: "POST", path: "/action/insertMany", body: { dataSource: "", database: "", collection: "", documents: [] } },
+      update_one:           { method: "POST", path: "/action/updateOne", body: { dataSource: "", database: "", collection: "", filter: {}, update: {} } },
+      update_many:          { method: "POST", path: "/action/updateMany", body: { dataSource: "", database: "", collection: "", filter: {}, update: {} } },
+      delete_one:           { method: "POST", path: "/action/deleteOne", body: { dataSource: "", database: "", collection: "", filter: {} } },
+      aggregate:            { method: "POST", path: "/action/aggregate", body: { dataSource: "", database: "", collection: "", pipeline: [] } },
+    },
+    authHeader: (creds) => ({
+      "api-key": creds.apiKey,
+      "Content-Type": "application/json",
+      "Access-Control-Request-Headers": "*",
+    }),
+  },
+
 };
 
 // ── Helpers ────────────────────────────────────────────────
