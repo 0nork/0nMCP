@@ -27,15 +27,18 @@ import { Orchestrator } from "./orchestrator.js";
 import { WorkflowRunner } from "./workflow.js";
 import { registerAllTools } from "./tools.js";
 import { registerCrmTools } from "./crm/index.js";
+import { registerVaultTools, autoUnseal } from "./vault/index.js";
+import { unsealedCache } from "./vault/cache.js";
 
 // ── Initialize ─────────────────────────────────────────────
 const connections = new ConnectionManager();
+connections._vaultCache = unsealedCache;
 const orchestrator = new Orchestrator(connections);
 const workflowRunner = new WorkflowRunner(connections);
 
 const server = new McpServer({
   name: "0nMCP",
-  version: "1.4.0",
+  version: "1.5.0",
 });
 
 // ============================================================
@@ -50,6 +53,18 @@ registerAllTools(server, connections, orchestrator, workflowRunner);
 
 import { z } from "zod";
 registerCrmTools(server, z);
+
+// ============================================================
+// VAULT TOOLS (machine-bound credential encryption)
+// ============================================================
+
+registerVaultTools(server, z);
+
+// Auto-unseal sealed connections if ON_VAULT_PASSPHRASE is set
+const vaultResult = autoUnseal();
+if (vaultResult.unsealed.length > 0) {
+  console.error(`Vault: auto-unsealed ${vaultResult.unsealed.length} connection(s)`);
+}
 
 // ============================================================
 // START SERVER (stdio transport)

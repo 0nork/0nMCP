@@ -1,5 +1,5 @@
 {
-  "generated": "2026-02-15T00:12:48.823Z",
+  "generated": "2026-02-15T00:29:19.754Z",
   "catalogVersion": "1.2.2",
   "services": 26,
   "tools": 290,
@@ -792,6 +792,7 @@
     "mongodb"
   ],
   "crmTools": 245,
-  "totalTools": 535,
-  "totalCapabilities": 693
+  "vaultTools": 4,
+  "totalTools": 539,
+  "totalCapabilities": 697
 }

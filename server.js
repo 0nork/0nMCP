@@ -20,6 +20,8 @@ import { Orchestrator } from "./orchestrator.js";
 import { WorkflowRunner } from "./workflow.js";
 import { registerAllTools } from "./tools.js";
 import { registerCrmTools } from "./crm/index.js";
+import { registerVaultTools, autoUnseal } from "./vault/index.js";
+import { unsealedCache } from "./vault/cache.js";
 import { z } from "zod";
 import {
   verifyStripeSignature,
@@ -45,10 +47,17 @@ export async function createApp() {
   }
 
   const connections = new ConnectionManager();
+  connections._vaultCache = unsealedCache;
   const orchestrator = new Orchestrator(connections);
   const workflowRunner = new WorkflowRunner(connections);
 
   const app = express();
+
+  // Auto-unseal vault if passphrase is set
+  const vaultResult = autoUnseal();
+  if (vaultResult.unsealed.length > 0) {
+    console.log(`Vault: auto-unsealed ${vaultResult.unsealed.length} connection(s)`);
+  }
 
   // ── Raw body capture for webhooks (before json parsing) ──
   app.use("/webhooks", express.raw({ type: "*/*" }));
@@ -82,9 +91,10 @@ export async function createApp() {
 
       // New session
       const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: () => crypto.randomUUID() });
-      const server = new McpServer({ name: "0nMCP", version: "1.4.0" });
+      const server = new McpServer({ name: "0nMCP", version: "1.5.0" });
       registerAllTools(server, connections, orchestrator, workflowRunner);
       registerCrmTools(server, z);
+      registerVaultTools(server, z);
 
       await server.connect(transport);
 

@@ -244,8 +244,12 @@ export class ConnectionManager {
 
   /**
    * Get credentials for a service.
+   * Checks vault unsealed cache first for sealed connections.
    */
   getCredentials(serviceKey) {
+    // Check if vault has unsealed credentials in memory
+    const unsealed = this._vaultCache?.get(serviceKey);
+    if (unsealed) return unsealed;
     return this.connections[serviceKey]?.credentials || null;
   }
 
