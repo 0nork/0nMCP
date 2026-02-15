@@ -29,6 +29,7 @@ import { registerAllTools } from "./tools.js";
 import { registerCrmTools } from "./crm/index.js";
 import { registerVaultTools, autoUnseal } from "./vault/index.js";
 import { unsealedCache } from "./vault/cache.js";
+import { registerEngineTools } from "./engine/index.js";
 
 // ── Initialize ─────────────────────────────────────────────
 const connections = new ConnectionManager();
@@ -38,7 +39,7 @@ const workflowRunner = new WorkflowRunner(connections);
 
 const server = new McpServer({
   name: "0nMCP",
-  version: "1.5.0",
+  version: "1.6.0",
 });
 
 // ============================================================
@@ -65,6 +66,12 @@ const vaultResult = autoUnseal();
 if (vaultResult.unsealed.length > 0) {
   console.error(`Vault: auto-unsealed ${vaultResult.unsealed.length} connection(s)`);
 }
+
+// ============================================================
+// ENGINE TOOLS (.0n conversion engine + AI brain bundles)
+// ============================================================
+
+registerEngineTools(server, z);
 
 // ============================================================
 // START SERVER (stdio transport)

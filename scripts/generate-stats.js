@@ -107,7 +107,10 @@ stats.crmTools = 245;
 // Vault module tools (vault_seal, vault_unseal, vault_verify, vault_fingerprint)
 stats.vaultTools = 4;
 
-stats.totalTools = stats.tools + stats.crmTools + stats.vaultTools;
+// Engine module tools (engine_import, engine_verify, engine_platforms, engine_export, engine_bundle, engine_open)
+stats.engineTools = 6;
+
+stats.totalTools = stats.tools + stats.crmTools + stats.vaultTools + stats.engineTools;
 
 // Total capabilities = tools + CRM tools + vault tools + actions + triggers
 stats.totalCapabilities = stats.totalTools + stats.actions + stats.triggers;
@@ -169,13 +172,14 @@ if (doPatch) {
   const pkgPath = resolve(ROOT, 'package.json');
   if (existsSync(pkgPath)) {
     const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
-    pkg.description = `Universal AI API Orchestrator — ${stats.totalTools} tools, ${stats.services} services, machine-bound vault encryption. The most comprehensive MCP server available. Free and open source from 0nORK.`;
+    pkg.description = `Universal AI API Orchestrator — ${stats.totalTools} tools, ${stats.services} services, portable AI Brain bundles + machine-bound vault encryption. The most comprehensive MCP server available. Free and open source from 0nORK.`;
 
     // Also update a custom stats field in package.json
     pkg['0nmcp-stats'] = {
       tools: stats.tools,
       crmTools: stats.crmTools,
       vaultTools: stats.vaultTools,
+      engineTools: stats.engineTools,
       totalTools: stats.totalTools,
       services: stats.services,
       actions: stats.actions,
@@ -226,6 +230,7 @@ console.log(`   Services:     ${stats.services}`);
 console.log(`   Catalog Tools:${String(stats.tools).padStart(4)}`);
 console.log(`   CRM Tools:   ${stats.crmTools}`);
 console.log(`   Vault Tools:  ${stats.vaultTools}`);
+console.log(`   Engine Tools: ${stats.engineTools}`);
 console.log(`   Total Tools:  ${stats.totalTools}`);
 console.log(`   Actions:     ${stats.actions}`);
 console.log(`   Triggers:    ${stats.triggers}`);

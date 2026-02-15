@@ -12,6 +12,7 @@
  *   npx 0nmcp connect      Interactive connection setup
  *   npx 0nmcp list         List connected services
  *   npx 0nmcp migrate      Migrate from ~/.0nmcp to ~/.0n
+ *   npx 0nmcp engine       Engine commands (import, verify, platforms, export, open)
  * 
  * ═══════════════════════════════════════════════════════════════════════════
  */
@@ -77,6 +78,14 @@ ${c.bright}Usage:${c.reset}
   ${c.cyan}npx 0nmcp connect${c.reset}      Interactive connection setup
   ${c.cyan}npx 0nmcp list${c.reset}         List connected services
   ${c.cyan}npx 0nmcp migrate${c.reset}      Migrate from ~/.0nmcp to ~/.0n
+
+${c.bright}Engine commands:${c.reset}
+
+  ${c.cyan}npx 0nmcp engine import <file>${c.reset}    Import credentials from .env/CSV/JSON
+  ${c.cyan}npx 0nmcp engine verify${c.reset}           Verify all connected API keys
+  ${c.cyan}npx 0nmcp engine platforms${c.reset}        Generate AI platform configs
+  ${c.cyan}npx 0nmcp engine export${c.reset}           Export .0n bundle (AI Brain)
+  ${c.cyan}npx 0nmcp engine open <bundle>${c.reset}    Open/inspect a .0n bundle
 
 ${c.bright}Serve options:${c.reset}
 
@@ -206,6 +215,13 @@ ${c.bright}Links:${c.reset}
       console.log(`${c.red}Error: ${err.message}${c.reset}`);
       process.exit(1);
     }
+  }
+
+  // Engine
+  if (command === 'engine') {
+    console.log(BANNER);
+    await handleEngine(args.slice(1));
+    return;
   }
 
   // Migrate
@@ -419,6 +435,246 @@ async function interactiveConnect() {
 
   console.log(`\n${c.green}✓${c.reset} Connected to ${c.bright}${service}${c.reset}`);
   console.log(`  Saved to: ${filePath}`);
+}
+
+async function handleEngine(args) {
+  const sub = args[0];
+
+  if (!sub || sub === 'help') {
+    console.log(`${c.bright}Engine — .0n Conversion Engine${c.reset}\n`);
+    console.log(`  ${c.cyan}import <file>${c.reset}     Import credentials from .env, CSV, or JSON`);
+    console.log(`  ${c.cyan}verify${c.reset}            Verify all connected API keys`);
+    console.log(`  ${c.cyan}platforms${c.reset}         Generate AI platform configs`);
+    console.log(`  ${c.cyan}export${c.reset}            Export .0n bundle (AI Brain)`);
+    console.log(`  ${c.cyan}open <bundle>${c.reset}     Open/inspect a .0n bundle file\n`);
+    return;
+  }
+
+  if (sub === 'import') {
+    const source = args[1];
+    if (!source) {
+      console.log(`${c.red}Usage: npx 0nmcp engine import <file>${c.reset}`);
+      process.exit(1);
+    }
+    try {
+      const { parseFile } = await import('./engine/parser.js');
+      const { mapEnvVars, groupByService, validateMapping } = await import('./engine/mapper.js');
+      const { entries } = parseFile(source);
+      const { mapped, unmapped } = mapEnvVars(entries);
+      const groups = groupByService(mapped);
+
+      console.log(`${c.bright}Import Results:${c.reset}\n`);
+      console.log(`  Entries found:  ${entries.length}`);
+      console.log(`  Mapped:         ${mapped.length}`);
+      console.log(`  Unmapped:       ${unmapped.length}\n`);
+
+      console.log(`${c.bright}Services Detected:${c.reset}\n`);
+      for (const [service, group] of Object.entries(groups)) {
+        const validation = validateMapping(service, group.credentials);
+        const status = validation.valid ? `${c.green}complete${c.reset}` : `${c.yellow}missing: ${validation.missing.join(', ')}${c.reset}`;
+        console.log(`  ${c.green}●${c.reset} ${c.bright}${service}${c.reset} — ${Object.keys(group.credentials).length} credentials (${status})`);
+      }
+
+      if (unmapped.length > 0) {
+        console.log(`\n${c.yellow}Unmapped variables:${c.reset} ${unmapped.map(u => u.key).join(', ')}`);
+      }
+
+      console.log(`\n${c.bright}Next:${c.reset} Run ${c.cyan}npx 0nmcp engine export${c.reset} to create a portable .0n bundle.`);
+    } catch (err) {
+      console.log(`${c.red}Error: ${err.message}${c.reset}`);
+      process.exit(1);
+    }
+    return;
+  }
+
+  if (sub === 'verify') {
+    try {
+      const { verifyAll } = await import('./engine/validator.js');
+      const { existsSync, readdirSync, readFileSync } = await import('fs');
+      const connectionsDir = path.join(DOT_ON_DIR, 'connections');
+
+      if (!existsSync(connectionsDir)) {
+        console.log(`${c.yellow}No connections found. Run ${c.cyan}npx 0nmcp connect${c.reset} first.`);
+        return;
+      }
+
+      const files = readdirSync(connectionsDir).filter(f => f.endsWith('.0n') || f.endsWith('.0n.json'));
+      const connections = {};
+      for (const file of files) {
+        try {
+          const data = JSON.parse(readFileSync(path.join(connectionsDir, file), 'utf8'));
+          if (data.$0n?.sealed) continue;
+          connections[data.service] = { credentials: data.auth?.credentials || {} };
+        } catch { /* skip */ }
+      }
+
+      if (Object.keys(connections).length === 0) {
+        console.log(`${c.yellow}No unsealed connections to verify.${c.reset}`);
+        return;
+      }
+
+      console.log(`${c.bright}Verifying ${Object.keys(connections).length} connections...${c.reset}\n`);
+
+      const { results, summary } = await verifyAll(connections);
+      for (const [service, result] of Object.entries(results)) {
+        const icon = result.valid ? `${c.green}✓` : `${c.red}✗`;
+        const latency = result.latency_ms ? ` (${result.latency_ms}ms)` : '';
+        console.log(`  ${icon}${c.reset} ${c.bright}${service}${c.reset}${latency}${result.error ? ` — ${result.error}` : ''}`);
+      }
+
+      console.log(`\n${c.bright}Summary:${c.reset} ${summary.valid}/${summary.total} valid`);
+    } catch (err) {
+      console.log(`${c.red}Error: ${err.message}${c.reset}`);
+      process.exit(1);
+    }
+    return;
+  }
+
+  if (sub === 'platforms') {
+    try {
+      const { getPlatformInfo, generatePlatformConfig } = await import('./engine/platforms.js');
+      const platform = args[1];
+
+      if (platform) {
+        const config = generatePlatformConfig(platform);
+        console.log(`${c.bright}${config.name} Configuration:${c.reset}\n`);
+        console.log(`  Config path: ${config.path || '(HTTP only)'}`);
+        console.log(`  Format: ${config.format}\n`);
+        console.log(typeof config.config === 'string' ? config.config : JSON.stringify(config.config, null, 2));
+      } else {
+        const info = getPlatformInfo();
+        console.log(`${c.bright}Supported AI Platforms:${c.reset}\n`);
+        for (const p of info) {
+          const status = p.installed ? `${c.green}installed${c.reset}` : `${c.yellow}not installed${c.reset}`;
+          console.log(`  ${p.installed ? c.green + '●' : c.blue + '○'}${c.reset} ${c.bright}${p.name}${c.reset} (${status})`);
+          if (p.configPath) console.log(`    ${p.configPath}`);
+        }
+        console.log(`\n${c.bright}Tip:${c.reset} Run ${c.cyan}npx 0nmcp engine platforms <name>${c.reset} to see config for a specific platform.`);
+        console.log(`     Names: claude_desktop, cursor, windsurf, gemini, continue, cline, openai`);
+      }
+    } catch (err) {
+      console.log(`${c.red}Error: ${err.message}${c.reset}`);
+      process.exit(1);
+    }
+    return;
+  }
+
+  if (sub === 'export') {
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    const ask = (q) => new Promise(resolve => rl.question(q, resolve));
+
+    try {
+      const passphrase = await ask('Bundle passphrase: ');
+      if (!passphrase) {
+        console.log(`${c.red}Passphrase required.${c.reset}`);
+        rl.close();
+        process.exit(1);
+      }
+      const name = await ask(`Bundle name (default: 0n AI Brain): `) || '0n AI Brain';
+      rl.close();
+
+      const { createBundle } = await import('./engine/bundler.js');
+      const { existsSync, readdirSync, readFileSync } = await import('fs');
+      const connectionsDir = path.join(DOT_ON_DIR, 'connections');
+
+      if (!existsSync(connectionsDir)) {
+        console.log(`${c.yellow}No connections found.${c.reset}`);
+        return;
+      }
+
+      const files = readdirSync(connectionsDir).filter(f => f.endsWith('.0n') || f.endsWith('.0n.json'));
+      const connections = {};
+      for (const file of files) {
+        try {
+          const data = JSON.parse(readFileSync(path.join(connectionsDir, file), 'utf8'));
+          if (data.$0n?.sealed) continue;
+          connections[data.service] = {
+            credentials: data.auth?.credentials || {},
+            name: data.$0n?.name || data.service,
+            authType: data.auth?.type || 'api_key',
+            environment: data.environment || 'production',
+          };
+        } catch { /* skip */ }
+      }
+
+      if (Object.keys(connections).length === 0) {
+        console.log(`${c.yellow}No exportable connections found.${c.reset}`);
+        return;
+      }
+
+      console.log(`\n${c.bright}Creating AI Brain bundle...${c.reset}\n`);
+
+      const result = createBundle({ connections, passphrase, name, platforms: 'all' });
+
+      console.log(`${c.green}${c.bright}Bundle created!${c.reset}\n`);
+      console.log(`  Path:        ${result.path}`);
+      console.log(`  Services:    ${result.manifest.services.join(', ')}`);
+      console.log(`  Connections: ${result.manifest.connection_count}`);
+      console.log(`  Platforms:   ${result.manifest.platform_count}`);
+      console.log(`  Encryption:  ${result.manifest.encryption.method}`);
+      console.log(`\n${c.bright}Share this file — recipient opens with:${c.reset} ${c.cyan}npx 0nmcp engine open <bundle>${c.reset}`);
+    } catch (err) {
+      console.log(`${c.red}Error: ${err.message}${c.reset}`);
+      process.exit(1);
+    }
+    return;
+  }
+
+  if (sub === 'open') {
+    const bundlePath = args[1];
+    if (!bundlePath) {
+      console.log(`${c.red}Usage: npx 0nmcp engine open <bundle.0n>${c.reset}`);
+      process.exit(1);
+    }
+
+    try {
+      const { inspectBundle, openBundle } = await import('./engine/bundler.js');
+
+      // First inspect
+      const info = inspectBundle(bundlePath);
+      console.log(`${c.bright}Bundle: ${info.name}${c.reset}\n`);
+      console.log(`  Created:  ${info.created}`);
+      console.log(`  Services: ${info.services.map(s => s.service).join(', ')}`);
+      console.log(`  Platforms: ${info.platforms.join(', ')}`);
+      if (info.includes.length > 0) {
+        console.log(`  Includes: ${info.includes.map(i => i.name).join(', ')}`);
+      }
+
+      const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+      const ask = (q) => new Promise(resolve => rl.question(q, resolve));
+
+      const passphrase = await ask('\nPassphrase to decrypt (leave empty to inspect only): ');
+      rl.close();
+
+      if (!passphrase) {
+        console.log(`\n${c.yellow}Inspect only — no credentials extracted.${c.reset}`);
+        return;
+      }
+
+      const result = openBundle(bundlePath, passphrase);
+
+      console.log(`\n${c.green}${c.bright}Bundle opened!${c.reset}\n`);
+      console.log(`  Connections imported: ${result.connections.join(', ')}`);
+      if (result.includes.length > 0) {
+        console.log(`  Files extracted: ${result.includes.join(', ')}`);
+      }
+      if (result.errors.length > 0) {
+        console.log(`\n${c.red}Errors:${c.reset}`);
+        for (const err of result.errors) {
+          console.log(`  ${c.red}●${c.reset} ${err}`);
+        }
+      }
+      console.log(`\n${c.bright}Tip:${c.reset} Run ${c.cyan}npx 0nmcp engine platforms${c.reset} to install AI platform configs.`);
+    } catch (err) {
+      console.log(`${c.red}Error: ${err.message}${c.reset}`);
+      process.exit(1);
+    }
+    return;
+  }
+
+  console.log(`${c.red}Unknown engine command: ${sub}${c.reset}`);
+  console.log(`Run ${c.cyan}npx 0nmcp engine help${c.reset} for usage`);
+  process.exit(1);
 }
 
 main().catch(console.error);

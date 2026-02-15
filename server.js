@@ -22,6 +22,7 @@ import { registerAllTools } from "./tools.js";
 import { registerCrmTools } from "./crm/index.js";
 import { registerVaultTools, autoUnseal } from "./vault/index.js";
 import { unsealedCache } from "./vault/cache.js";
+import { registerEngineTools } from "./engine/index.js";
 import { z } from "zod";
 import {
   verifyStripeSignature,
@@ -91,10 +92,11 @@ export async function createApp() {
 
       // New session
       const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: () => crypto.randomUUID() });
-      const server = new McpServer({ name: "0nMCP", version: "1.5.0" });
+      const server = new McpServer({ name: "0nMCP", version: "1.6.0" });
       registerAllTools(server, connections, orchestrator, workflowRunner);
       registerCrmTools(server, z);
       registerVaultTools(server, z);
+      registerEngineTools(server, z);
 
       await server.connect(transport);
 
@@ -121,7 +123,7 @@ export async function createApp() {
     res.json({
       status: "ok",
       name: "0nMCP",
-      version: "1.4.0",
+      version: "1.6.0",
       uptime: process.uptime(),
       connections: connections.count(),
       workflows: workflowRunner.listWorkflows().length,

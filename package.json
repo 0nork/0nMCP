@@ -1,8 +1,8 @@
 {
   "name": "0nmcp",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "mcpName": "io.github.0nork/0nMCP",
-  "description": "Universal AI API Orchestrator — 539 tools, 26 services, machine-bound vault encryption. The most comprehensive MCP server available. Free and open source from 0nORK.",
+  "description": "Universal AI API Orchestrator — 545 tools, 26 services, portable AI Brain bundles + machine-bound vault encryption. The most comprehensive MCP server available. Free and open source from 0nORK.",
   "type": "module",
   "main": "index.js",
   "types": "types/index.d.ts",
@@ -46,6 +46,9 @@
     },
     "./vault": {
       "import": "./vault/index.js"
+    },
+    "./engine": {
+      "import": "./engine/index.js"
     }
   },
   "scripts": {
@@ -114,6 +117,10 @@
     "encryption",
     "machine-bound",
     "credential-storage",
+    "portable-bundle",
+    "ai-brain",
+    "credential-import",
+    "platform-config",
     "0n",
     "0nork",
     "0nmcp"
@@ -164,6 +171,7 @@
     "webhooks.js",
     "ratelimit.js",
     "vault/",
+    "engine/",
     "lib/",
     "types/",
     "README.md",
@@ -173,12 +181,13 @@
     "tools": 290,
     "crmTools": 245,
     "vaultTools": 4,
-    "totalTools": 539,
+    "engineTools": 6,
+    "totalTools": 545,
     "services": 26,
     "actions": 65,
     "triggers": 93,
-    "totalCapabilities": 697,
+    "totalCapabilities": 703,
     "categories": 13,
-    "lastUpdated": "2026-02-15T00:29:19.754Z"
+    "lastUpdated": "2026-02-15T01:12:52.909Z"
   }
 }
