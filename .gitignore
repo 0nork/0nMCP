@@ -5,3 +5,8 @@ node_modules/
 server.json
 server.json.bak
 test-*.mjs
+skill-converter.js
+import-openai.js
+import-gemini.js
+import-openclaw.js
+import-all.js

@@ -93,6 +93,17 @@ ${c.bright}Engine commands:${c.reset}
   ${c.cyan}npx 0nmcp engine export${c.reset}           Export .0n bundle (AI Brain)
   ${c.cyan}npx 0nmcp engine open <bundle>${c.reset}    Open/inspect a .0n bundle
 
+${c.bright}Vault Container commands (Patent Pending #63/990,046):${c.reset}
+
+  ${c.cyan}npx 0nmcp vault create${c.reset}             Create a .0nv vault container
+  ${c.cyan}npx 0nmcp vault open <file>${c.reset}        Open/decrypt a .0nv container
+  ${c.cyan}npx 0nmcp vault inspect <file>${c.reset}     Inspect container metadata (no passphrase)
+  ${c.cyan}npx 0nmcp vault verify <file>${c.reset}      Verify Seal of Truth + signature
+  ${c.cyan}npx 0nmcp vault escrow create${c.reset}      Generate escrow keypairs
+  ${c.cyan}npx 0nmcp vault escrow unwrap${c.reset}      Unwrap container with escrow key
+  ${c.cyan}npx 0nmcp vault transfer <file>${c.reset}    Register a vault transfer
+  ${c.cyan}npx 0nmcp vault revoke <id>${c.reset}        Revoke a transfer ID
+
 ${c.bright}Application commands:${c.reset}
 
   ${c.cyan}npx 0nmcp app run <file>${c.reset}          Start application server
@@ -244,6 +255,13 @@ ${c.bright}Links:${c.reset}
       console.log(`${c.red}Error: ${err.message}${c.reset}`);
       process.exit(1);
     }
+  }
+
+  // Vault Container
+  if (command === 'vault') {
+    console.log(BANNER);
+    await handleVault(args.slice(1));
+    return;
   }
 
   // App
@@ -520,6 +538,229 @@ async function interactiveConnect() {
 
   console.log(`\n${c.green}✓${c.reset} Connected to ${c.bright}${service}${c.reset}`);
   console.log(`  Saved to: ${filePath}`);
+}
+
+// ═══════════════════════════════════════════════════════════
+// Vault Container Commands (Patent Pending #63/990,046)
+// ═══════════════════════════════════════════════════════════
+
+function promptInput(prompt) {
+  return new Promise(resolve => {
+    const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+    rl.question(prompt, answer => { rl.close(); resolve(answer); });
+  });
+}
+
+async function handleVault(args) {
+  const sub = args[0];
+
+  if (!sub || sub === 'help') {
+    console.log(`
+${c.bright}Vault Container Commands${c.reset} ${c.yellow}(Patent Pending #63/990,046)${c.reset}
+
+  ${c.cyan}vault create${c.reset}              Create a .0nv vault container
+    --layers <names>          Comma-separated layer names (default: all)
+    --passphrase <pass>       Encryption passphrase
+    --output <file>           Output file path
+
+  ${c.cyan}vault open <file>${c.reset}          Open/decrypt a .0nv container
+    --passphrase <pass>       Decryption passphrase
+    --layer <name>            Only decrypt this layer
+
+  ${c.cyan}vault inspect <file>${c.reset}       Inspect without decrypting
+
+  ${c.cyan}vault verify <file>${c.reset}        Verify Seal of Truth + Ed25519 signature
+
+  ${c.cyan}vault escrow create${c.reset}        Generate escrow keypairs
+    --parties <n>             Number of parties (1-8)
+
+  ${c.cyan}vault transfer <file>${c.reset}      Register a transfer
+    --to <recipient>          Recipient identifier
+
+  ${c.cyan}vault revoke <id>${c.reset}          Revoke a transfer ID
+
+${c.bright}7 Semantic Layers:${c.reset}
+  workflows, credentials, env_vars, mcp_configs,
+  site_profiles, ai_brain, audit_trail
+`);
+    return;
+  }
+
+  if (sub === 'create') {
+    const { assembleContainer, saveContainer } = await import('./vault/container.js');
+    const { LAYER_NAMES } = await import('./vault/layers.js');
+
+    const passphrase = getFlag(args, '--passphrase') || await promptInput('Passphrase: ');
+    const output = getFlag(args, '--output');
+    const layerStr = getFlag(args, '--layers');
+    const requestedLayers = layerStr ? layerStr.split(',').map(s => s.trim()) : LAYER_NAMES;
+
+    // Build layer data from ~/.0n directory
+    const layers = {};
+    for (const name of requestedLayers) {
+      if (!LAYER_NAMES.includes(name)) {
+        console.log(`${c.red}Invalid layer: ${name}${c.reset}`);
+        process.exit(1);
+      }
+      layers[name] = { placeholder: true, created: new Date().toISOString() };
+    }
+
+    console.log(`\n${c.bright}Creating vault container...${c.reset}`);
+    console.log(`  Layers: ${Object.keys(layers).join(', ')}`);
+
+    try {
+      const result = await assembleContainer({ layers, passphrase });
+      const homePath = path.join(os.homedir(), '.0n', 'vault');
+      if (!fs.existsSync(homePath)) fs.mkdirSync(homePath, { recursive: true });
+      const filePath = output || path.join(homePath, `${result.transferId}.0nv`);
+      saveContainer(result.buffer, filePath);
+
+      console.log(`\n${c.green}✓ Container created${c.reset}`);
+      console.log(`  Transfer ID:   ${c.cyan}${result.transferId}${c.reset}`);
+      console.log(`  Seal of Truth: ${c.cyan}${result.sealHex}${c.reset}`);
+      console.log(`  Layers:        ${result.layerCount}`);
+      console.log(`  Size:          ${result.buffer.length} bytes`);
+      console.log(`  File:          ${c.yellow}${filePath}${c.reset}`);
+    } catch (err) {
+      console.log(`${c.red}Error: ${err.message}${c.reset}`);
+      process.exit(1);
+    }
+    return;
+  }
+
+  if (sub === 'open') {
+    const file = args[1];
+    if (!file) { console.log(`${c.red}Usage: vault open <file.0nv>${c.reset}`); process.exit(1); }
+
+    const { disassembleContainer, loadContainer } = await import('./vault/container.js');
+    const passphrase = getFlag(args, '--passphrase') || await promptInput('Passphrase: ');
+    const layer = getFlag(args, '--layer');
+
+    try {
+      const buffer = loadContainer(file);
+      const result = await disassembleContainer(buffer, passphrase, layer ? [layer] : null);
+
+      console.log(`\n${c.green}✓ Container opened${c.reset}`);
+      console.log(`  Transfer ID: ${c.cyan}${result.metadata.transferId}${c.reset}`);
+      console.log(`  Seal valid:  ${result.seal.valid ? c.green + '✓' : c.red + '✗'}${c.reset}`);
+      console.log(`  Sig valid:   ${result.signature.valid ? c.green + '✓' : c.red + '✗'}${c.reset}`);
+      console.log(`  Layers:`);
+      for (const [name, data] of Object.entries(result.layers)) {
+        const preview = JSON.stringify(data).substring(0, 80);
+        console.log(`    ${c.cyan}${name}${c.reset}: ${preview}...`);
+      }
+    } catch (err) {
+      console.log(`${c.red}Error: ${err.message}${c.reset}`);
+      process.exit(1);
+    }
+    return;
+  }
+
+  if (sub === 'inspect') {
+    const file = args[1];
+    if (!file) { console.log(`${c.red}Usage: vault inspect <file.0nv>${c.reset}`); process.exit(1); }
+
+    const { inspectContainer, loadContainer } = await import('./vault/container.js');
+    try {
+      const buffer = loadContainer(file);
+      const info = inspectContainer(buffer);
+      console.log(`\n${c.bright}Container Inspection${c.reset}`);
+      console.log(JSON.stringify(info, null, 2));
+    } catch (err) {
+      console.log(`${c.red}Error: ${err.message}${c.reset}`);
+      process.exit(1);
+    }
+    return;
+  }
+
+  if (sub === 'verify') {
+    const file = args[1];
+    if (!file) { console.log(`${c.red}Usage: vault verify <file.0nv>${c.reset}`); process.exit(1); }
+
+    const { inspectContainer, loadContainer } = await import('./vault/container.js');
+    try {
+      const buffer = loadContainer(file);
+      const info = inspectContainer(buffer);
+      const verified = info.seal.valid && info.signature.valid;
+
+      console.log(`\n${verified ? c.green + '✓ VERIFIED' : c.red + '✗ FAILED'}${c.reset}`);
+      console.log(`  Seal of Truth: ${info.seal.valid ? c.green + 'Valid' : c.red + 'Invalid'}${c.reset} (${info.seal.algorithm})`);
+      console.log(`  Signature:     ${info.signature.valid ? c.green + 'Valid' : c.red + 'Invalid'}${c.reset} (${info.signature.algorithm})`);
+      console.log(`  Transfer ID:   ${info.metadata.transferId}`);
+      console.log(`  Created:       ${info.metadata.created}`);
+      console.log(`  Patent:        ${info.patent}`);
+    } catch (err) {
+      console.log(`${c.red}Error: ${err.message}${c.reset}`);
+      process.exit(1);
+    }
+    return;
+  }
+
+  if (sub === 'escrow') {
+    const escrowSub = args[1];
+    if (escrowSub === 'create') {
+      const { generatePartyKeys } = await import('./vault/escrow.js');
+      const count = parseInt(getFlag(args, '--parties') || '3');
+
+      console.log(`\n${c.bright}Generating ${count} escrow keypairs...${c.reset}`);
+      const parties = [];
+      for (let i = 0; i < count; i++) {
+        const party = generatePartyKeys();
+        parties.push(party);
+        console.log(`\n  ${c.cyan}Party ${i + 1}${c.reset} (${party.partyId}):`);
+        console.log(`    Public:  ${party.publicKey.toString('hex').substring(0, 32)}...`);
+        console.log(`    Secret:  ${party.secretKey.toString('hex').substring(0, 32)}...`);
+      }
+      console.log(`\n${c.green}✓ ${count} keypairs generated${c.reset}`);
+      console.log(`  ${c.yellow}Save secret keys securely. Share public keys for container creation.${c.reset}`);
+    }
+    return;
+  }
+
+  if (sub === 'transfer') {
+    const file = args[1];
+    if (!file) { console.log(`${c.red}Usage: vault transfer <file.0nv>${c.reset}`); process.exit(1); }
+
+    const { inspectContainer, loadContainer } = await import('./vault/container.js');
+    const { registerTransfer } = await import('./vault/registry.js');
+    const recipient = getFlag(args, '--to');
+
+    try {
+      const buffer = loadContainer(file);
+      const info = inspectContainer(buffer);
+      const result = registerTransfer(info.metadata.transferId, info.seal.hash, { recipient });
+
+      if (result.success) {
+        console.log(`\n${c.green}✓ Transfer registered${c.reset}`);
+        console.log(`  Transfer ID: ${c.cyan}${info.metadata.transferId}${c.reset}`);
+        if (recipient) console.log(`  Recipient:   ${recipient}`);
+      } else {
+        console.log(`\n${c.red}✗ ${result.error}${c.reset}`);
+      }
+    } catch (err) {
+      console.log(`${c.red}Error: ${err.message}${c.reset}`);
+      process.exit(1);
+    }
+    return;
+  }
+
+  if (sub === 'revoke') {
+    const transferId = args[1];
+    if (!transferId) { console.log(`${c.red}Usage: vault revoke <transferId>${c.reset}`); process.exit(1); }
+
+    const { revokeTransfer } = await import('./vault/registry.js');
+    const result = revokeTransfer(transferId);
+
+    if (result.success) {
+      console.log(`\n${c.green}✓ Transfer revoked: ${transferId}${c.reset}`);
+    } else {
+      console.log(`\n${c.red}✗ ${result.error}${c.reset}`);
+    }
+    return;
+  }
+
+  console.log(`${c.red}Unknown vault command: ${sub}${c.reset}`);
+  console.log(`Run ${c.cyan}0nmcp vault help${c.reset} for usage.`);
 }
 
 async function handleEngine(args) {

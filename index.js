@@ -28,6 +28,7 @@ import { WorkflowRunner } from "./workflow.js";
 import { registerAllTools } from "./tools.js";
 import { registerCrmTools } from "./crm/index.js";
 import { registerVaultTools, autoUnseal } from "./vault/index.js";
+import { registerContainerTools } from "./vault/tools-container.js";
 import { unsealedCache } from "./vault/cache.js";
 import { registerEngineTools } from "./engine/index.js";
 
@@ -39,7 +40,7 @@ const workflowRunner = new WorkflowRunner(connections);
 
 const server = new McpServer({
   name: "0nMCP",
-  version: "1.7.0",
+  version: "2.0.0",
 });
 
 // ============================================================
@@ -72,6 +73,12 @@ if (vaultResult.unsealed.length > 0) {
 // ============================================================
 
 registerEngineTools(server, z);
+
+// ============================================================
+// VAULT CONTAINER TOOLS (patent-pending 0nVault containers)
+// ============================================================
+
+registerContainerTools(server, z);
 
 // ============================================================
 // START SERVER (stdio transport)
