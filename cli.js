@@ -271,6 +271,13 @@ ${c.bright}Links:${c.reset}
     return;
   }
 
+  // Business Deed
+  if (command === 'deed') {
+    console.log(BANNER);
+    await handleDeed(args.slice(1));
+    return;
+  }
+
   // Engine
   if (command === 'engine') {
     console.log(BANNER);
@@ -761,6 +768,273 @@ ${c.bright}7 Semantic Layers:${c.reset}
 
   console.log(`${c.red}Unknown vault command: ${sub}${c.reset}`);
   console.log(`Run ${c.cyan}0nmcp vault help${c.reset} for usage.`);
+}
+
+async function handleDeed(args) {
+  const sub = args[0];
+
+  if (!sub || sub === 'help') {
+    console.log(`
+${c.bright}Business Deed — Digital Asset Transfer System${c.reset} ${c.yellow}(Patent Pending #63/990,046)${c.reset}
+
+  ${c.cyan}deed create${c.reset}                 Create a Business Deed (.0nv)
+    --name <name>              Business name (required)
+    --from <file>              Import credentials from .env, .json, or .csv
+    --passphrase <pass>        Encryption passphrase
+    --output <file>            Output file path
+
+  ${c.cyan}deed open <file>${c.reset}            Open/decrypt a Business Deed
+    --passphrase <pass>        Decryption passphrase
+    --layer <name>             Only decrypt this layer
+
+  ${c.cyan}deed inspect <file>${c.reset}         Inspect deed metadata (no passphrase needed)
+
+  ${c.cyan}deed verify <file>${c.reset}          Verify Seal of Truth + Ed25519 signature
+
+  ${c.cyan}deed accept <file>${c.reset}          Accept a deed transfer (buyer)
+    --passphrase <pass>        Current deed passphrase
+    --buyer-name <name>        Buyer's name
+    --buyer-email <email>      Buyer's email
+    --new-passphrase <pass>    New passphrase for re-encrypted deed
+
+  ${c.cyan}deed import <file>${c.reset}          Import deed to live system config
+    --passphrase <pass>        Decryption passphrase
+    --target <dir>             Target directory (default: ~/.0n/)
+
+  ${c.cyan}deed export${c.reset}                 Collect + package in one step
+    --from <file>              Source file (.env, .json, .csv)
+    --name <name>              Business name
+    --passphrase <pass>        Encryption passphrase
+    --output <file>            Output file path
+
+${c.bright}Lifecycle:${c.reset} CREATE > PACKAGE > ESCROW > ACCEPT > IMPORT > FLIP
+`);
+    return;
+  }
+
+  if (sub === 'create') {
+    const { BusinessDeed } = await import('./vault/deed.js');
+    const deed = new BusinessDeed();
+
+    const name = getFlag(args, '--name') || await promptInput('Business name: ');
+    const passphrase = getFlag(args, '--passphrase') || await promptInput('Passphrase: ');
+    const output = getFlag(args, '--output');
+    const from = getFlag(args, '--from');
+
+    let createOpts = { name, passphrase, output };
+
+    if (from) {
+      // Collect from file
+      const { collectCredentials } = await import('./vault/deed-collector.js');
+      console.log(`\n${c.bright}Collecting credentials from ${from}...${c.reset}`);
+      const collected = await collectCredentials({ envFile: from, jsonFile: from, csvFile: from });
+      createOpts.credentials = collected.credentials;
+      createOpts.envVars = collected.envVars;
+      console.log(`  Found ${collected.credentialCount} credentials across ${collected.services.length} services`);
+      if (collected.services.length > 0) {
+        console.log(`  Services: ${collected.services.join(', ')}`);
+      }
+    }
+
+    console.log(`\n${c.bright}Creating Business Deed...${c.reset}`);
+    try {
+      const result = await deed.create(createOpts);
+      console.log(`\n${c.green}✓ Business Deed created${c.reset}`);
+      console.log(`  Business:      ${c.cyan}${name}${c.reset}`);
+      console.log(`  Transfer ID:   ${c.cyan}${result.transferId}${c.reset}`);
+      console.log(`  Seal of Truth: ${c.cyan}${result.sealHex}${c.reset}`);
+      console.log(`  Services:      ${result.services.join(', ') || 'none'}`);
+      console.log(`  Credentials:   ${result.credentialCount}`);
+      console.log(`  Layers:        ${result.layerCount}`);
+      console.log(`  Size:          ${result.containerSize} bytes`);
+      console.log(`  File:          ${c.yellow}${result.file}${c.reset}`);
+    } catch (err) {
+      console.log(`${c.red}Error: ${err.message}${c.reset}`);
+      process.exit(1);
+    }
+    return;
+  }
+
+  if (sub === 'open') {
+    const file = args[1];
+    if (!file) { console.log(`${c.red}Usage: deed open <file.0nv>${c.reset}`); process.exit(1); }
+
+    const { BusinessDeed } = await import('./vault/deed.js');
+    const deed = new BusinessDeed();
+    const passphrase = getFlag(args, '--passphrase') || await promptInput('Passphrase: ');
+    const layer = getFlag(args, '--layer');
+
+    try {
+      const result = await deed.open(file, passphrase, layer ? [layer] : null);
+
+      console.log(`\n${c.green}✓ Business Deed opened${c.reset}`);
+      console.log(`  Transfer ID: ${c.cyan}${result.metadata.transferId}${c.reset}`);
+      console.log(`  Seal valid:  ${result.seal.valid ? c.green + '✓' : c.red + '✗'}${c.reset}`);
+      console.log(`  Sig valid:   ${result.signature.valid ? c.green + '✓' : c.red + '✗'}${c.reset}`);
+
+      if (result.deed) {
+        console.log(`  Business:    ${c.cyan}${result.deed.business?.name || 'Unknown'}${c.reset}`);
+        console.log(`  Services:    ${(result.deed.services || []).join(', ')}`);
+        console.log(`  Transfers:   ${(result.deed.transfer_history || []).length}`);
+      }
+
+      console.log(`\n${c.bright}Layers:${c.reset}`);
+      for (const [name, data] of Object.entries(result.layers)) {
+        if (name === 'audit_trail') continue;
+        const preview = JSON.stringify(data).substring(0, 100);
+        console.log(`  ${c.cyan}${name}${c.reset}: ${preview}${preview.length >= 100 ? '...' : ''}`);
+      }
+    } catch (err) {
+      console.log(`${c.red}Error: ${err.message}${c.reset}`);
+      process.exit(1);
+    }
+    return;
+  }
+
+  if (sub === 'inspect') {
+    const file = args[1];
+    if (!file) { console.log(`${c.red}Usage: deed inspect <file.0nv>${c.reset}`); process.exit(1); }
+
+    const { BusinessDeed } = await import('./vault/deed.js');
+    const deed = new BusinessDeed();
+
+    try {
+      const info = deed.inspect(file);
+      console.log(`\n${c.bright}Business Deed Inspection${c.reset}`);
+      console.log(JSON.stringify(info, null, 2));
+    } catch (err) {
+      console.log(`${c.red}Error: ${err.message}${c.reset}`);
+      process.exit(1);
+    }
+    return;
+  }
+
+  if (sub === 'verify') {
+    const file = args[1];
+    if (!file) { console.log(`${c.red}Usage: deed verify <file.0nv>${c.reset}`); process.exit(1); }
+
+    const { BusinessDeed } = await import('./vault/deed.js');
+    const deed = new BusinessDeed();
+
+    try {
+      const v = deed.verify(file);
+      console.log(`\n${v.verified ? c.green + '✓ VERIFIED' : c.red + '✗ FAILED'}${c.reset}`);
+      console.log(`  Seal of Truth: ${v.seal.valid ? c.green + 'Valid' : c.red + 'Invalid'}${c.reset} (${v.seal.algorithm})`);
+      console.log(`  Signature:     ${v.signature.valid ? c.green + 'Valid' : c.red + 'Invalid'}${c.reset} (${v.signature.algorithm})`);
+      console.log(`  Transfer ID:   ${v.transferId}`);
+      console.log(`  Created:       ${v.created}`);
+      console.log(`  Patent:        ${v.patent}`);
+    } catch (err) {
+      console.log(`${c.red}Error: ${err.message}${c.reset}`);
+      process.exit(1);
+    }
+    return;
+  }
+
+  if (sub === 'accept') {
+    const file = args[1];
+    if (!file) { console.log(`${c.red}Usage: deed accept <file.0nv>${c.reset}`); process.exit(1); }
+
+    const { BusinessDeed } = await import('./vault/deed.js');
+    const deed = new BusinessDeed();
+
+    const passphrase = getFlag(args, '--passphrase') || await promptInput('Current passphrase: ');
+    const buyerName = getFlag(args, '--buyer-name') || await promptInput('Buyer name: ');
+    const buyerEmail = getFlag(args, '--buyer-email') || await promptInput('Buyer email: ');
+    const newPassphrase = getFlag(args, '--new-passphrase');
+
+    try {
+      const result = await deed.accept(
+        file, passphrase,
+        { name: buyerName, email: buyerEmail },
+        newPassphrase,
+      );
+
+      console.log(`\n${c.green}✓ Business Deed accepted${c.reset}`);
+      console.log(`  New Transfer ID: ${c.cyan}${result.transferId}${c.reset}`);
+      console.log(`  New Seal:        ${c.cyan}${result.sealHex}${c.reset}`);
+      console.log(`  Buyer:           ${buyerName} <${buyerEmail}>`);
+      console.log(`  Prev Transfer:   ${result.previousTransferId}`);
+      console.log(`  File:            ${c.yellow}${result.file}${c.reset}`);
+    } catch (err) {
+      console.log(`${c.red}Error: ${err.message}${c.reset}`);
+      process.exit(1);
+    }
+    return;
+  }
+
+  if (sub === 'import') {
+    const file = args[1];
+    if (!file) { console.log(`${c.red}Usage: deed import <file.0nv>${c.reset}`); process.exit(1); }
+
+    const { BusinessDeed } = await import('./vault/deed.js');
+    const deed = new BusinessDeed();
+
+    const passphrase = getFlag(args, '--passphrase') || await promptInput('Passphrase: ');
+    const target = getFlag(args, '--target');
+
+    try {
+      const report = await deed.importDeed(file, passphrase, target);
+
+      console.log(`\n${report.success ? c.green + '✓ Import complete' : c.red + '✗ Import had errors'}${c.reset}`);
+      if (report.connections.written.length > 0) {
+        console.log(`  Connections: ${report.connections.written.join(', ')}`);
+      }
+      if (report.envFile) {
+        console.log(`  Env file:    ${report.envFile.file} (${report.envFile.written} vars)`);
+      }
+      if (report.workflows.count > 0) {
+        console.log(`  Workflows:   ${report.workflows.count}`);
+      }
+      if (report.brain.written.length > 0) {
+        console.log(`  AI Brain:    ${report.brain.written.join(', ')}`);
+      }
+      if (report.deed) {
+        console.log(`  Business:    ${c.cyan}${report.deed.business?.name || 'Unknown'}${c.reset}`);
+      }
+      if (report.errors.length > 0) {
+        console.log(`  ${c.red}Errors: ${report.errors.join(', ')}${c.reset}`);
+      }
+    } catch (err) {
+      console.log(`${c.red}Error: ${err.message}${c.reset}`);
+      process.exit(1);
+    }
+    return;
+  }
+
+  if (sub === 'export') {
+    const { BusinessDeed } = await import('./vault/deed.js');
+    const deed = new BusinessDeed();
+
+    const from = getFlag(args, '--from');
+    if (!from) { console.log(`${c.red}Usage: deed export --from <file> --name <name> --passphrase <pass>${c.reset}`); process.exit(1); }
+
+    const name = getFlag(args, '--name') || await promptInput('Business name: ');
+    const passphrase = getFlag(args, '--passphrase') || await promptInput('Passphrase: ');
+    const output = getFlag(args, '--output');
+
+    console.log(`\n${c.bright}Exporting Business Deed from ${from}...${c.reset}`);
+    try {
+      const result = await deed.export(
+        { envFile: from, jsonFile: from, csvFile: from },
+        { name, passphrase, output }
+      );
+
+      console.log(`\n${c.green}✓ Business Deed exported${c.reset}`);
+      console.log(`  Business:      ${c.cyan}${name}${c.reset}`);
+      console.log(`  Transfer ID:   ${c.cyan}${result.transferId}${c.reset}`);
+      console.log(`  Services:      ${result.services.join(', ') || 'none'}`);
+      console.log(`  Credentials:   ${result.credentialCount}`);
+      console.log(`  File:          ${c.yellow}${result.file}${c.reset}`);
+    } catch (err) {
+      console.log(`${c.red}Error: ${err.message}${c.reset}`);
+      process.exit(1);
+    }
+    return;
+  }
+
+  console.log(`${c.red}Unknown deed command: ${sub}${c.reset}`);
+  console.log(`Run ${c.cyan}0nmcp deed help${c.reset} for usage.`);
 }
 
 async function handleEngine(args) {

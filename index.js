@@ -29,6 +29,7 @@ import { registerAllTools } from "./tools.js";
 import { registerCrmTools } from "./crm/index.js";
 import { registerVaultTools, autoUnseal } from "./vault/index.js";
 import { registerContainerTools } from "./vault/tools-container.js";
+import { registerDeedTools } from "./vault/tools-deed.js";
 import { unsealedCache } from "./vault/cache.js";
 import { registerEngineTools } from "./engine/index.js";
 
@@ -40,7 +41,7 @@ const workflowRunner = new WorkflowRunner(connections);
 
 const server = new McpServer({
   name: "0nMCP",
-  version: "2.0.0",
+  version: "2.1.0",
 });
 
 // ============================================================
@@ -79,6 +80,12 @@ registerEngineTools(server, z);
 // ============================================================
 
 registerContainerTools(server, z);
+
+// ============================================================
+// BUSINESS DEED TOOLS (digital asset transfer system)
+// ============================================================
+
+registerDeedTools(server, z);
 
 // ============================================================
 // START SERVER (stdio transport)
