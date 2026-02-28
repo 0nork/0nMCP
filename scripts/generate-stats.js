@@ -107,13 +107,19 @@ stats.crmTools = 245;
 // Vault module tools (vault_seal, vault_unseal, vault_verify, vault_fingerprint)
 stats.vaultTools = 4;
 
+// Vault container tools (vault_container_create, open, inspect, verify, escrow_create, escrow_unwrap, transfer, revoke)
+stats.vaultContainerTools = 8;
+
+// Deed transfer tools (deed_create, deed_open, deed_inspect, deed_verify, deed_accept, deed_import)
+stats.deedTools = 6;
+
 // Engine module tools (engine_import, engine_verify, engine_platforms, engine_export, engine_bundle, engine_open)
 stats.engineTools = 6;
 
 // Application engine tools (app_build, app_open, app_inspect, app_validate, app_list)
 stats.appTools = 5;
 
-stats.totalTools = stats.tools + stats.crmTools + stats.vaultTools + stats.engineTools + stats.appTools;
+stats.totalTools = stats.tools + stats.crmTools + stats.vaultTools + (stats.vaultContainerTools || 0) + (stats.deedTools || 0) + stats.engineTools + stats.appTools;
 
 // Total capabilities = tools + CRM tools + vault tools + actions + triggers
 stats.totalCapabilities = stats.totalTools + stats.actions + stats.triggers;
@@ -182,6 +188,8 @@ if (doPatch) {
       tools: stats.tools,
       crmTools: stats.crmTools,
       vaultTools: stats.vaultTools,
+      vaultContainerTools: stats.vaultContainerTools,
+      deedTools: stats.deedTools,
       engineTools: stats.engineTools,
       appTools: stats.appTools,
       totalTools: stats.totalTools,
@@ -234,6 +242,8 @@ console.log(`   Services:     ${stats.services}`);
 console.log(`   Catalog Tools:${String(stats.tools).padStart(4)}`);
 console.log(`   CRM Tools:   ${stats.crmTools}`);
 console.log(`   Vault Tools:  ${stats.vaultTools}`);
+console.log(`   Container:    ${stats.vaultContainerTools}`);
+console.log(`   Deed Tools:   ${stats.deedTools}`);
 console.log(`   Engine Tools: ${stats.engineTools}`);
 console.log(`   App Tools:    ${stats.appTools}`);
 console.log(`   Total Tools:  ${stats.totalTools}`);

@@ -267,10 +267,10 @@
     "appTools": 5,
     "totalTools": 819,
     "services": 48,
-    "actions": 315,
-    "triggers": 93,
-    "totalCapabilities": 958,
-    "categories": 19,
-    "lastUpdated": "2026-02-28T12:00:00.000Z"
+    "actions": 104,
+    "triggers": 155,
+    "totalCapabilities": 1078,
+    "categories": 21,
+    "lastUpdated": "2026-02-28T10:19:30.807Z"
   }
 }

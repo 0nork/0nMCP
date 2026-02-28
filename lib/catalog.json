@@ -3,8 +3,8 @@
   "_meta": {
     "name": "0nMCP Service Catalog",
     "description": "Single source of truth for all services, tools, actions, and triggers in the 0nMCP ecosystem",
-    "version": "1.2.2",
-    "lastUpdated": "2026-02-11T00:00:00Z",
+    "version": "2.2.0",
+    "lastUpdated": "2026-02-28T12:00:00Z",
     "maintainer": "0nORK <hello@0nork.com>"
   },
   "services": [
@@ -793,6 +793,648 @@
         "document_deleted"
       ],
       "rateLimit": { "requests": 100, "window": 1 }
+    },
+    {
+      "id": "quickbooks",
+      "name": "QuickBooks",
+      "category": "accounting",
+      "description": "Invoices, customers, payments, accounts, reports",
+      "tools": [
+        "quickbooks_create_invoice",
+        "quickbooks_list_invoices",
+        "quickbooks_get_invoice",
+        "quickbooks_send_invoice",
+        "quickbooks_create_customer",
+        "quickbooks_list_customers",
+        "quickbooks_get_customer",
+        "quickbooks_update_customer",
+        "quickbooks_create_payment",
+        "quickbooks_list_payments",
+        "quickbooks_list_accounts",
+        "quickbooks_get_account",
+        "quickbooks_create_bill",
+        "quickbooks_list_bills",
+        "quickbooks_create_estimate",
+        "quickbooks_send_estimate",
+        "quickbooks_create_item",
+        "quickbooks_list_items",
+        "quickbooks_get_item",
+        "quickbooks_profit_loss_report",
+        "quickbooks_balance_sheet"
+      ],
+      "actions": [
+        "quickbooks_sync",
+        "invoice_report",
+        "revenue_summary"
+      ],
+      "triggers": [
+        "payment_received",
+        "invoice_created",
+        "invoice_overdue",
+        "customer_created"
+      ],
+      "rateLimit": { "requests": 100, "window": 60 }
+    },
+    {
+      "id": "asana",
+      "name": "Asana",
+      "category": "project",
+      "description": "Tasks, projects, sections, workspaces, tags, teams",
+      "tools": [
+        "asana_create_task",
+        "asana_list_tasks",
+        "asana_get_task",
+        "asana_update_task",
+        "asana_delete_task",
+        "asana_create_project",
+        "asana_list_projects",
+        "asana_get_project",
+        "asana_create_section",
+        "asana_list_sections",
+        "asana_list_workspaces",
+        "asana_create_tag",
+        "asana_list_tags",
+        "asana_list_teams",
+        "asana_add_task_to_project",
+        "asana_search_tasks"
+      ],
+      "actions": [
+        "asana_sync",
+        "task_report"
+      ],
+      "triggers": [
+        "task_created",
+        "task_completed",
+        "task_assigned",
+        "project_updated"
+      ],
+      "rateLimit": { "requests": 100, "window": 60 }
+    },
+    {
+      "id": "intercom",
+      "name": "Intercom",
+      "category": "support",
+      "description": "Contacts, conversations, companies, tags, articles",
+      "tools": [
+        "intercom_create_contact",
+        "intercom_list_contacts",
+        "intercom_search_contacts",
+        "intercom_update_contact",
+        "intercom_create_conversation",
+        "intercom_list_conversations",
+        "intercom_reply_to_conversation",
+        "intercom_close_conversation",
+        "intercom_create_company",
+        "intercom_list_companies",
+        "intercom_create_tag",
+        "intercom_tag_contact",
+        "intercom_list_tags",
+        "intercom_create_article",
+        "intercom_list_articles"
+      ],
+      "actions": [
+        "intercom_sync",
+        "support_report"
+      ],
+      "triggers": [
+        "conversation_created",
+        "conversation_replied",
+        "contact_created",
+        "tag_applied"
+      ],
+      "rateLimit": { "requests": 100, "window": 60 }
+    },
+    {
+      "id": "dropbox",
+      "name": "Dropbox",
+      "category": "storage",
+      "description": "Files, folders, sharing, search, metadata",
+      "tools": [
+        "dropbox_list_folder",
+        "dropbox_list_folder_continue",
+        "dropbox_get_metadata",
+        "dropbox_create_folder",
+        "dropbox_delete",
+        "dropbox_move",
+        "dropbox_copy",
+        "dropbox_search",
+        "dropbox_create_shared_link",
+        "dropbox_list_shared_links"
+      ],
+      "actions": [
+        "dropbox_sync",
+        "backup_report"
+      ],
+      "triggers": [
+        "file_uploaded",
+        "file_modified",
+        "folder_created"
+      ],
+      "rateLimit": { "requests": 100, "window": 60 }
+    },
+    {
+      "id": "whatsapp",
+      "name": "WhatsApp",
+      "category": "communication",
+      "description": "Text messages, templates, media via Business API",
+      "tools": [
+        "whatsapp_send_text",
+        "whatsapp_send_template",
+        "whatsapp_send_media",
+        "whatsapp_list_templates",
+        "whatsapp_upload_media",
+        "whatsapp_get_media_url"
+      ],
+      "actions": [
+        "whatsapp_broadcast"
+      ],
+      "triggers": [
+        "message_received",
+        "message_delivered",
+        "message_read"
+      ],
+      "rateLimit": { "requests": 80, "window": 60 }
+    },
+    {
+      "id": "instagram",
+      "name": "Instagram",
+      "category": "social",
+      "description": "Media, comments, stories, insights, profile management",
+      "tools": [
+        "instagram_list_media",
+        "instagram_get_media",
+        "instagram_create_media_container",
+        "instagram_publish_media",
+        "instagram_list_comments",
+        "instagram_reply_to_comment",
+        "instagram_delete_comment",
+        "instagram_get_insights",
+        "instagram_list_stories",
+        "instagram_get_profile"
+      ],
+      "actions": [
+        "instagram_schedule_post",
+        "engagement_report"
+      ],
+      "triggers": [
+        "comment_received",
+        "mention_received",
+        "media_published"
+      ],
+      "rateLimit": { "requests": 60, "window": 60 }
+    },
+    {
+      "id": "twitter",
+      "name": "Twitter / X",
+      "category": "social",
+      "description": "Tweets, users, followers, lists, DMs, engagement",
+      "tools": [
+        "twitter_create_tweet",
+        "twitter_delete_tweet",
+        "twitter_search_tweets",
+        "twitter_get_user",
+        "twitter_get_user_by_username",
+        "twitter_get_followers",
+        "twitter_get_following",
+        "twitter_create_list",
+        "twitter_get_lists",
+        "twitter_send_dm",
+        "twitter_get_tweet",
+        "twitter_get_user_tweets",
+        "twitter_like_tweet",
+        "twitter_unlike_tweet",
+        "twitter_retweet",
+        "twitter_unretweet"
+      ],
+      "actions": [
+        "twitter_schedule_post",
+        "follower_report"
+      ],
+      "triggers": [
+        "mention_received",
+        "dm_received",
+        "follower_gained"
+      ],
+      "rateLimit": { "requests": 50, "window": 60 }
+    },
+    {
+      "id": "tiktok",
+      "name": "TikTok",
+      "category": "social",
+      "description": "Videos, campaigns, ad groups, ads, reporting",
+      "tools": [
+        "tiktok_list_videos",
+        "tiktok_get_video_info",
+        "tiktok_create_campaign",
+        "tiktok_list_campaigns",
+        "tiktok_get_campaign",
+        "tiktok_update_campaign",
+        "tiktok_create_ad_group",
+        "tiktok_list_ad_groups",
+        "tiktok_create_ad",
+        "tiktok_list_ads",
+        "tiktok_get_report"
+      ],
+      "actions": [
+        "tiktok_schedule_post",
+        "performance_report"
+      ],
+      "triggers": [
+        "video_published",
+        "campaign_completed"
+      ],
+      "rateLimit": { "requests": 60, "window": 60 }
+    },
+    {
+      "id": "google_ads",
+      "name": "Google Ads",
+      "category": "advertising",
+      "description": "Campaigns, ad groups, ads, search, reporting",
+      "tools": [
+        "google_ads_search",
+        "google_ads_mutate_campaigns",
+        "google_ads_list_campaigns",
+        "google_ads_create_campaign",
+        "google_ads_list_ad_groups",
+        "google_ads_create_ad_group",
+        "google_ads_list_ads",
+        "google_ads_create_ad",
+        "google_ads_get_report"
+      ],
+      "actions": [
+        "google_ads_optimize",
+        "budget_report"
+      ],
+      "triggers": [
+        "campaign_budget_exceeded",
+        "conversion_received"
+      ],
+      "rateLimit": { "requests": 100, "window": 60 }
+    },
+    {
+      "id": "facebook_ads",
+      "name": "Facebook Ads",
+      "category": "advertising",
+      "description": "Campaigns, adsets, ads, audiences, insights",
+      "tools": [
+        "facebook_ads_create_campaign",
+        "facebook_ads_list_campaigns",
+        "facebook_ads_get_campaign",
+        "facebook_ads_update_campaign",
+        "facebook_ads_create_adset",
+        "facebook_ads_list_adsets",
+        "facebook_ads_create_ad",
+        "facebook_ads_list_ads",
+        "facebook_ads_get_insights",
+        "facebook_ads_create_audience",
+        "facebook_ads_list_audiences"
+      ],
+      "actions": [
+        "facebook_ads_optimize",
+        "roi_report"
+      ],
+      "triggers": [
+        "campaign_completed",
+        "budget_exceeded",
+        "lead_generated"
+      ],
+      "rateLimit": { "requests": 100, "window": 60 }
+    },
+    {
+      "id": "plaid",
+      "name": "Plaid",
+      "category": "finance",
+      "description": "Bank accounts, transactions, balances, identity, auth",
+      "tools": [
+        "plaid_create_link_token",
+        "plaid_exchange_public_token",
+        "plaid_get_accounts",
+        "plaid_get_balance",
+        "plaid_get_transactions",
+        "plaid_sync_transactions",
+        "plaid_get_identity",
+        "plaid_get_auth",
+        "plaid_get_institutions"
+      ],
+      "actions": [
+        "plaid_reconcile",
+        "transaction_report"
+      ],
+      "triggers": [
+        "transactions_updated",
+        "balance_changed"
+      ],
+      "rateLimit": { "requests": 100, "window": 60 }
+    },
+    {
+      "id": "square",
+      "name": "Square",
+      "category": "payments",
+      "description": "Payments, customers, orders, catalog, inventory",
+      "tools": [
+        "square_create_payment",
+        "square_list_payments",
+        "square_get_payment",
+        "square_create_refund",
+        "square_create_customer",
+        "square_list_customers",
+        "square_get_customer",
+        "square_update_customer",
+        "square_delete_customer",
+        "square_create_order",
+        "square_list_orders",
+        "square_get_order",
+        "square_create_catalog_object",
+        "square_list_catalog",
+        "square_search_catalog",
+        "square_get_inventory",
+        "square_adjust_inventory"
+      ],
+      "actions": [
+        "square_sync",
+        "sales_report"
+      ],
+      "triggers": [
+        "payment_completed",
+        "order_created",
+        "inventory_updated"
+      ],
+      "rateLimit": { "requests": 100, "window": 60 }
+    },
+    {
+      "id": "tiktok_ads",
+      "name": "TikTok Ads",
+      "category": "advertising",
+      "description": "Ad campaigns, ad groups, ads, audiences, reporting",
+      "tools": [
+        "tiktok_ads_create_campaign",
+        "tiktok_ads_list_campaigns",
+        "tiktok_ads_update_campaign_status",
+        "tiktok_ads_create_adgroup",
+        "tiktok_ads_list_adgroups",
+        "tiktok_ads_update_adgroup",
+        "tiktok_ads_create_ad",
+        "tiktok_ads_list_ads",
+        "tiktok_ads_update_ad",
+        "tiktok_ads_get_report",
+        "tiktok_ads_create_audience",
+        "tiktok_ads_list_audiences"
+      ],
+      "actions": [
+        "tiktok_ads_optimize"
+      ],
+      "triggers": [
+        "campaign_completed",
+        "budget_exhausted"
+      ],
+      "rateLimit": { "requests": 60, "window": 60 }
+    },
+    {
+      "id": "x_ads",
+      "name": "X Ads",
+      "category": "advertising",
+      "description": "Campaigns, line items, promoted tweets, audiences, stats",
+      "tools": [
+        "x_ads_list_campaigns",
+        "x_ads_create_campaign",
+        "x_ads_get_campaign",
+        "x_ads_update_campaign",
+        "x_ads_list_line_items",
+        "x_ads_create_line_item",
+        "x_ads_list_promoted_tweets",
+        "x_ads_create_promoted_tweet",
+        "x_ads_get_stats",
+        "x_ads_create_audience",
+        "x_ads_list_audiences"
+      ],
+      "actions": [
+        "x_ads_optimize"
+      ],
+      "triggers": [
+        "campaign_completed",
+        "impression_goal_reached"
+      ],
+      "rateLimit": { "requests": 60, "window": 60 }
+    },
+    {
+      "id": "linkedin_ads",
+      "name": "LinkedIn Ads",
+      "category": "advertising",
+      "description": "Campaigns, campaign groups, creatives, audiences, analytics",
+      "tools": [
+        "linkedin_ads_list_campaigns",
+        "linkedin_ads_create_campaign",
+        "linkedin_ads_get_campaign",
+        "linkedin_ads_update_campaign",
+        "linkedin_ads_list_campaign_groups",
+        "linkedin_ads_create_campaign_group",
+        "linkedin_ads_list_creatives",
+        "linkedin_ads_create_creative",
+        "linkedin_ads_get_analytics",
+        "linkedin_ads_create_audience",
+        "linkedin_ads_list_audiences"
+      ],
+      "actions": [
+        "linkedin_ads_optimize"
+      ],
+      "triggers": [
+        "campaign_completed",
+        "lead_form_submitted"
+      ],
+      "rateLimit": { "requests": 60, "window": 60 }
+    },
+    {
+      "id": "instagram_ads",
+      "name": "Instagram Ads",
+      "category": "advertising",
+      "description": "Campaigns, adsets, ads, insights, previews",
+      "tools": [
+        "instagram_ads_create_campaign",
+        "instagram_ads_list_campaigns",
+        "instagram_ads_create_adset",
+        "instagram_ads_list_adsets",
+        "instagram_ads_create_ad",
+        "instagram_ads_list_ads",
+        "instagram_ads_get_insights",
+        "instagram_ads_get_ad_previews"
+      ],
+      "actions": [
+        "instagram_ads_optimize"
+      ],
+      "triggers": [
+        "campaign_completed",
+        "engagement_spike"
+      ],
+      "rateLimit": { "requests": 60, "window": 60 }
+    },
+    {
+      "id": "smartlead",
+      "name": "SmartLead",
+      "category": "marketing",
+      "description": "Email campaigns, leads, email accounts, sequences, stats",
+      "tools": [
+        "smartlead_create_campaign",
+        "smartlead_list_campaigns",
+        "smartlead_get_campaign",
+        "smartlead_update_campaign",
+        "smartlead_add_leads",
+        "smartlead_list_leads",
+        "smartlead_get_lead",
+        "smartlead_add_email_account",
+        "smartlead_list_email_accounts",
+        "smartlead_get_campaign_stats",
+        "smartlead_create_sequence",
+        "smartlead_list_sequences"
+      ],
+      "actions": [
+        "smartlead_sync",
+        "outreach_report"
+      ],
+      "triggers": [
+        "email_opened",
+        "email_replied",
+        "lead_bounced"
+      ],
+      "rateLimit": { "requests": 60, "window": 60 }
+    },
+    {
+      "id": "zapier",
+      "name": "Zapier",
+      "category": "automation",
+      "description": "Zaps, actions, triggers, automation management",
+      "tools": [
+        "zapier_list_zaps",
+        "zapier_get_zap",
+        "zapier_enable_zap",
+        "zapier_disable_zap",
+        "zapier_list_actions"
+      ],
+      "actions": [
+        "zapier_sync"
+      ],
+      "triggers": [
+        "zap_triggered",
+        "zap_error"
+      ],
+      "rateLimit": { "requests": 30, "window": 60 }
+    },
+    {
+      "id": "mulesoft",
+      "name": "MuleSoft",
+      "category": "integration",
+      "description": "Organizations, environments, APIs, applications, deployments",
+      "tools": [
+        "mulesoft_list_organizations",
+        "mulesoft_list_environments",
+        "mulesoft_list_apis",
+        "mulesoft_get_api",
+        "mulesoft_list_applications",
+        "mulesoft_get_application",
+        "mulesoft_deploy_application"
+      ],
+      "actions": [
+        "mulesoft_sync"
+      ],
+      "triggers": [
+        "deployment_completed",
+        "api_error"
+      ],
+      "rateLimit": { "requests": 60, "window": 60 }
+    },
+    {
+      "id": "azure",
+      "name": "Azure",
+      "category": "cloud",
+      "description": "Subscriptions, resource groups, storage, VMs, management",
+      "tools": [
+        "azure_list_subscriptions",
+        "azure_list_resource_groups",
+        "azure_create_resource_group",
+        "azure_list_resources",
+        "azure_get_resource",
+        "azure_delete_resource",
+        "azure_list_storage_accounts",
+        "azure_list_vms",
+        "azure_get_vm",
+        "azure_start_vm",
+        "azure_stop_vm"
+      ],
+      "actions": [
+        "azure_sync",
+        "cost_report"
+      ],
+      "triggers": [
+        "resource_created",
+        "vm_state_changed",
+        "alert_triggered"
+      ],
+      "rateLimit": { "requests": 100, "window": 60 }
+    },
+    {
+      "id": "pipedrive",
+      "name": "Pipedrive",
+      "category": "crm",
+      "description": "Deals, persons, organizations, activities, pipelines, notes",
+      "tools": [
+        "pipedrive_create_deal",
+        "pipedrive_list_deals",
+        "pipedrive_get_deal",
+        "pipedrive_update_deal",
+        "pipedrive_delete_deal",
+        "pipedrive_create_person",
+        "pipedrive_list_persons",
+        "pipedrive_get_person",
+        "pipedrive_update_person",
+        "pipedrive_delete_person",
+        "pipedrive_create_organization",
+        "pipedrive_list_organizations",
+        "pipedrive_create_activity",
+        "pipedrive_list_activities",
+        "pipedrive_list_pipelines",
+        "pipedrive_get_pipeline",
+        "pipedrive_create_note",
+        "pipedrive_list_notes",
+        "pipedrive_search_items"
+      ],
+      "actions": [
+        "pipedrive_sync",
+        "deal_report",
+        "activity_summary"
+      ],
+      "triggers": [
+        "deal_created",
+        "deal_updated",
+        "deal_won",
+        "deal_lost",
+        "person_created"
+      ],
+      "rateLimit": { "requests": 100, "window": 60 }
+    },
+    {
+      "id": "linkedin",
+      "name": "LinkedIn",
+      "category": "social",
+      "description": "Posts, profiles, connections, organizations, images",
+      "tools": [
+        "linkedin_create_post",
+        "linkedin_get_profile",
+        "linkedin_list_connections",
+        "linkedin_get_organization",
+        "linkedin_list_org_posts",
+        "linkedin_delete_post",
+        "linkedin_get_post",
+        "linkedin_upload_image"
+      ],
+      "actions": [
+        "linkedin_schedule_post",
+        "engagement_report"
+      ],
+      "triggers": [
+        "post_engagement",
+        "connection_accepted",
+        "mention_received"
+      ],
+      "rateLimit": { "requests": 60, "window": 60 }
     }
   ],
   "categories": {
@@ -808,6 +1450,14 @@
     "scheduling": { "label": "Scheduling", "icon": "calendar" },
     "storage": { "label": "Storage", "icon": "hard-drive" },
     "support": { "label": "Support", "icon": "headphones" },
-    "marketing": { "label": "Marketing", "icon": "megaphone" }
+    "marketing": { "label": "Marketing", "icon": "megaphone" },
+    "accounting": { "label": "Accounting", "icon": "calculator" },
+    "advertising": { "label": "Advertising", "icon": "megaphone" },
+    "finance": { "label": "Finance", "icon": "banknote" },
+    "cloud": { "label": "Cloud", "icon": "cloud" },
+    "integration": { "label": "Integration", "icon": "link" },
+    "automation": { "label": "Automation", "icon": "bot" },
+    "project": { "label": "Project Management", "icon": "clipboard" },
+    "social": { "label": "Social Media", "icon": "share" }
   }
 }
