@@ -22,11 +22,12 @@
 [![Services](https://img.shields.io/badge/services-26+-blue?style=flat-square)](#-supported-services)
 [![Tools](https://img.shields.io/badge/tools-564-orange?style=flat-square)](#-all-tools)
 [![Community](https://img.shields.io/badge/community-1000%2B_devs-ff6600?style=flat-square)](#-community)
+[![Website](https://img.shields.io/badge/Website-0nmcp.com-ff6b35?style=flat-square)](https://0nmcp.com)
 [![GitHub Discussions](https://img.shields.io/github/discussions/0nork/0nMCP?style=flat-square&label=discussions)](https://github.com/0nork/0nMCP/discussions)
 
 **564 tools. 26 services. Zero configuration. One natural language interface.**
 
-[Quick Start](#-installation) · [Services](#-supported-services) · [564 Tools](#-all-tools) · [.0n Standard](#-the-0n-standard) · [Unlocks](#-unlocks) · [Community](#-community) · [Contributing](#-contributing)
+[Website](https://0nmcp.com) · [Quick Start](#-installation) · [Services](#-supported-services) · [564 Tools](#-all-tools) · [.0n Standard](#-the-0n-standard) · [Unlocks](#-unlocks) · [Community](https://0nmcp.com/community)
 
 </div>
 
@@ -123,6 +124,8 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (Mac) o
 > `ANTHROPIC_API_KEY` is **optional**. It enables AI-powered multi-step task planning. Without it, 0nMCP still works using keyword-based routing.
 
 ### Restart Claude Desktop. Start talking.
+
+> **New to 0nMCP?** Visit **[0nmcp.com](https://0nmcp.com)** for guides, tutorials, and the community hub.
 
 ---
 
@@ -566,7 +569,7 @@ The tool factory handles registration, validation, API calls, error handling —
 
 0nMCP grows with its community. Every milestone unlocks new capabilities — the more developers who join, the more powerful the platform becomes.
 
-**See the full unlock schedule at [0nmcp.com/sponsor](https://0nmcp.com/sponsor)**
+**Visit [0nmcp.com](https://0nmcp.com) for the full unlock schedule and community impact. [Become a Sponsor](https://0nmcp.com/sponsor)**
 
 ### Phase 0 — Foundation (Current)
 
@@ -704,7 +707,7 @@ node index.js
 
 | Project | Description |
 |---------|-------------|
-| **[0nMCP](https://github.com/0nork/0nMCP)** | Universal AI API Orchestrator — 564 tools, 26 services, Vault encryption, Business Deed transfer |
+| **[0nMCP](https://0nmcp.com)** | Universal AI API Orchestrator — 564 tools, 26 services, Vault encryption, Business Deed transfer ([source](https://github.com/0nork/0nMCP)) |
 | **[0n-spec](https://github.com/0nork/0n-spec)** | The .0n Standard — universal configuration format for AI orchestration |
 | **[0nork](https://github.com/0nork/0nork)** | The parent org — AI orchestration infrastructure |
 
@@ -731,7 +734,7 @@ node index.js
 
 **564 tools. 26 services. Zero config. MIT licensed. Community driven.**
 
-**[Get Started](https://github.com/0nork/0nMCP)** · **[Join the Community](https://0nmcp.com/community)** · **[Unlock Schedule](https://0nmcp.com/sponsor)** · **[Read the Docs](https://github.com/0nork/0n-spec)**
+**[Get Started](https://0nmcp.com)** · **[Join the Community](https://0nmcp.com/community)** · **[Unlock Schedule](https://0nmcp.com/sponsor)** · **[View Source](https://github.com/0nork/0nMCP)** · **[Read the Spec](https://github.com/0nork/0n-spec)**
 
 ---
 
