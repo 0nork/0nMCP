@@ -1,0 +1,21 @@
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    properties:
+      ANTHROPIC_API_KEY:
+        type: string
+        description: "Optional — enables AI-powered multi-step task planning. Without it, 0nMCP uses keyword-based routing."
+    required: []
+  commandFunction:
+    <%- if (config.ANTHROPIC_API_KEY) { %>
+    command: npx
+    args:
+      - 0nmcp
+    env:
+      ANTHROPIC_API_KEY: "<%- config.ANTHROPIC_API_KEY %>"
+    <%- } else { %>
+    command: npx
+    args:
+      - 0nmcp
+    <%- } %>

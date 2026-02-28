@@ -20,19 +20,19 @@
 [![MCP](https://img.shields.io/badge/MCP-Compatible-blueviolet?style=flat-square)](https://modelcontextprotocol.io)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 [![Services](https://img.shields.io/badge/services-26+-blue?style=flat-square)](#-supported-services)
-[![Tools](https://img.shields.io/badge/tools-550-orange?style=flat-square)](#-all-tools)
+[![Tools](https://img.shields.io/badge/tools-564-orange?style=flat-square)](#-all-tools)
 [![Community](https://img.shields.io/badge/community-1000%2B_devs-ff6600?style=flat-square)](#-community)
 [![GitHub Discussions](https://img.shields.io/github/discussions/0nork/0nMCP?style=flat-square&label=discussions)](https://github.com/0nork/0nMCP/discussions)
 
-**550 tools. 26 services. Zero configuration. One natural language interface.**
+**564 tools. 26 services. Zero configuration. One natural language interface.**
 
-[Quick Start](#-installation) · [Services](#-supported-services) · [550 Tools](#-all-tools) · [.0n Standard](#-the-0n-standard) · [Unlocks](#-unlocks) · [Community](#-community) · [Contributing](#-contributing)
+[Quick Start](#-installation) · [Services](#-supported-services) · [564 Tools](#-all-tools) · [.0n Standard](#-the-0n-standard) · [Unlocks](#-unlocks) · [Community](#-community) · [Contributing](#-contributing)
 
 </div>
 
 ---
 
-> **v1.7.0** — 550 tools across 26 services in 13 categories. Now with the **.0n Conversion Engine** (portable AI Brain bundles), **Vault** (machine-bound encrypted credential storage), **Application Engine** (build + distribute .0n apps), **Workflow Runtime** + **HTTP Server**, and a **CLI with named runs**. [See what's new](#-whats-new-in-v17).
+> **v2.1.0** — 564 tools across 26 services in 13 categories. 714 total capabilities. Now with **Business Deed Transfer** (package + escrow + transfer entire digital businesses), **0nVault Containers** (Patent Pending #63/990,046 — 7 semantic layers, multi-party escrow, Seal of Truth), **Application Engine**, **Workflow Runtime** + **HTTP Server**, and **portable AI Brain bundles**. [See what's new](#-whats-new-in-v21).
 
 ---
 
@@ -157,7 +157,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (Mac) o
 | **MongoDB** | Database | Find, insert, update, delete, aggregate documents via Atlas Data API |
 | **CRM** | CRM | **245 tools** — contacts, conversations, calendars, invoices, payments, products, pipelines, social media, custom objects, and more |
 
-**26 services. 550 tools. 13 categories. One interface.**
+**26 services. 564 tools. 13 categories. One interface.**
 
 > **More coming:** QuickBooks, Asana, Intercom, AWS S3, Vercel, Cloudflare, Firebase, Figma...
 
@@ -267,25 +267,42 @@ The deepest CRM integration available in any MCP server. 245 tools across 12 mod
 | **Users** | 24 | Users, forms, surveys, funnels, media, companies, businesses |
 | **Objects** | 34 | Custom objects, associations, email, workflows, snapshots, links, campaigns, courses, SaaS |
 
-**550 total tools.** Universal orchestration (290 catalog tools across 26 services) + the most comprehensive CRM integration in the MCP ecosystem (245 dedicated tools).
+**564 total tools.** Universal orchestration (290 catalog tools across 26 services) + the most comprehensive CRM integration in the MCP ecosystem (245 dedicated tools) + Vault (4 tools) + Vault Containers (8 tools) + Business Deed Transfer (6 tools) + Engine (6 tools) + App Builder (5 tools).
 
 > Every CRM tool is data-driven — defined as configuration, not code. Adding new endpoints takes minutes, not hours. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
-## What's New in v1.7
+## What's New in v2.1
 
-- **550 tools across 26 services** in 13 categories — 708 total capabilities
-- **.0n Conversion Engine** — import credentials from .env/CSV/JSON, auto-map to 26 services, verify API keys, generate configs for 7 AI platforms (Claude Desktop, Cursor, Windsurf, Gemini, Continue, Cline, OpenAI)
+### v2.1.0 — Business Deed Transfer System
+
+- **6 new tools**: `deed_create`, `deed_open`, `deed_inspect`, `deed_verify`, `deed_accept`, `deed_import`
+- Package entire business digital assets into encrypted `.0nv` containers
+- Chain of custody tracking with transfer history in audit_trail layer
+- Auto-detection of credentials from .env/JSON/CSV via engine mapper
+- Lifecycle: **CREATE → PACKAGE → ESCROW → ACCEPT → IMPORT → FLIP**
+
+### v2.0.0 — 0nVault Container System (Patent Pending #63/990,046)
+
+- **8 new tools**: `vault_container_create/open/inspect/verify` + `escrow_create/escrow_unwrap/transfer/revoke`
+- **7 semantic layers**: workflows, credentials, env_vars, mcp_configs, site_profiles, ai_brain, audit_trail
+- Argon2id double-encryption for credential layer
+- X25519 ECDH multi-party escrow (up to 8 parties, per-layer access matrix)
+- **Seal of Truth**: SHA3-256 content-addressed integrity verification
+- Ed25519 digital signatures, binary `.0nv` container format
+- Transfer registry with replay prevention
+- **Application Engine** — build, distribute, inspect, schedule `.0n` applications
+
+### v1.7.0 — Foundation
+
+- 550 tools across 26 services in 13 categories — 708 total capabilities
+- **.0n Conversion Engine** — import credentials, auto-map to 26 services, generate configs for 7 AI platforms
 - **Vault** — machine-bound encrypted credential storage (AES-256-GCM + PBKDF2-SHA512 + hardware fingerprint)
-- **Application Engine** — build, distribute, inspect, and validate portable .0n application bundles
-- **Workflow Runtime** — load and execute `.0n` workflow files with template engine, conditions, and step chaining
-- **HTTP Server** — Express-based REST API, MCP over HTTP, and webhook receivers
-- **Named Runs / Hotkeys** — define command aliases in your SWITCH file, run them as `0nmcp launch`, `0nmcp hello`
-- **Interactive Shell** — `0nmcp shell` starts a REPL for `/command` execution
-- **Portable encryption** — passphrase-only AES-256-GCM (no machine fingerprint, works anywhere)
-- **245 CRM tools** — full API coverage across 12 modules
+- **Workflow Runtime** + **HTTP Server** + **CLI with named runs**
 - **Three-Level Execution** (Patent Pending) — Pipeline → Assembly Line → Radial Burst
+
+> **564 tools. 26 services. 714 total capabilities.** See [CHANGELOG.md](CHANGELOG.md) for full version history.
 
 ---
 
@@ -324,7 +341,7 @@ The orchestrator uses keyword matching to route tasks to the right service. Less
 | **Flexibility** | Say what you want | Triggers/actions only | Unlimited but complex |
 | **Maintenance** | Zero | Update broken zaps | Fix API changes |
 | **Open source** | Yes (MIT) | No | Depends |
-| **Tools available** | 550 | Varies | Whatever you build |
+| **Tools available** | 564 | Varies | Whatever you build |
 
 ---
 
@@ -375,32 +392,62 @@ Every task execution is logged to `~/.0n/history/` as JSONL — full audit trail
 
 ```
 0nMCP/
-├── index.js          # Entry point — 7 universal tools + server startup
-├── catalog.js        # Service catalog — 26 integrations with endpoints
-├── connections.js    # Connection manager — ~/.0n/connections/*.0n
-├── orchestrator.js   # AI execution planner — the brain
-├── webhooks.js       # Webhook receiver and event processing
-├── ratelimit.js      # Per-service rate limiting with retry
-├── cli.js            # CLI — init, connect, migrate, interactive setup
-├── crm/              # 245 CRM tools across 12 modules
-│   ├── index.js      # Tool orchestrator — registers all modules
-│   ├── helpers.js    # Data-driven tool factory — registerTools()
-│   ├── auth.js       # OAuth, tokens, snapshots, workflows
-│   ├── contacts.js   # 23 contact management tools
-│   ├── conversations.js  # 13 messaging tools
-│   ├── calendars.js  # 27 calendar & scheduling tools
-│   ├── opportunities.js  # 14 pipeline & deal tools
-│   ├── invoices.js   # 20 invoicing tools
-│   ├── payments.js   # 16 payment processing tools
-│   ├── products.js   # 10 product catalog tools
-│   ├── locations.js  # 24 location management tools
-│   ├── social.js     # 35 social media & blog tools
-│   ├── users.js      # 24 user & form tools
-│   └── objects.js    # 34 custom object & association tools
+├── index.js              # Entry point — MCP server startup
+├── catalog.js            # Service catalog — 26 integrations with endpoints
+├── connections.js        # Connection manager — ~/.0n/connections/*.0n
+├── orchestrator.js       # AI execution planner — the brain
+├── workflow.js           # WorkflowRunner — .0n file execution
+├── server.js             # Express HTTP server — MCP over HTTP + webhooks
+├── webhooks.js           # Webhook receiver and HMAC verification
+├── ratelimit.js          # Per-service rate limiting with retry
+├── tools.js              # Tool registration for catalog + engine tools
+├── cli.js                # CLI — 39KB, all commands
+├── crm/                  # 245 CRM tools across 12 modules
+│   ├── index.js          # Tool orchestrator — registers all modules
+│   ├── helpers.js        # Data-driven tool factory — registerTools()
+│   ├── auth.js           # OAuth, tokens, snapshots, workflows (5 tools)
+│   ├── contacts.js       # Contact management (23 tools)
+│   ├── conversations.js  # Messaging — SMS, Email, WhatsApp, IG, FB (13 tools)
+│   ├── calendars.js      # Calendar & scheduling (27 tools)
+│   ├── opportunities.js  # Pipeline & deal management (14 tools)
+│   ├── invoices.js       # Invoicing (20 tools)
+│   ├── payments.js       # Payment processing (16 tools)
+│   ├── products.js       # Product catalog (10 tools)
+│   ├── locations.js      # Location management (24 tools)
+│   ├── social.js         # Social media & blogs (35 tools)
+│   ├── users.js          # User & form management (24 tools)
+│   └── objects.js        # Custom objects & associations (34 tools)
+├── vault/                # Encrypted credential storage + containers
+│   ├── index.js          # Vault entry — seal/unseal/verify/fingerprint (4 tools)
+│   ├── container.js      # 0nVault Container orchestrator
+│   ├── crypto-container.js # AES-256-GCM + Argon2id encryption
+│   ├── layers.js         # 7 semantic layers
+│   ├── escrow.js         # X25519 ECDH multi-party escrow
+│   ├── seal.js           # Seal of Truth — SHA3-256 integrity
+│   ├── registry.js       # Transfer registry with replay prevention
+│   ├── tools-container.js # 8 vault container tools
+│   ├── deed.js           # Business Deed Transfer core
+│   ├── deed-collector.js # Asset collection from .env/JSON/CSV
+│   ├── deed-importer.js  # Import deeds into .0n ecosystem
+│   ├── tools-deed.js     # 6 deed transfer tools
+│   └── cache.js          # Vault cache layer
+├── engine/               # .0n Conversion Engine + App Builder
+│   ├── index.js          # Engine entry — 6 tools
+│   ├── parser.js         # Multi-format credential parser
+│   ├── mapper.js         # Auto-map credentials to 26 services
+│   ├── validator.js      # API key verification
+│   ├── platforms.js      # 7 AI platform config generators
+│   ├── bundler.js        # Portable .0n bundle creator
+│   ├── cipher-portable.js # Passphrase-only AES-256-GCM
+│   ├── application.js    # Application Engine core
+│   ├── app-builder.js    # App builder
+│   ├── app-server.js     # App HTTP middleware
+│   ├── operations.js     # App operations
+│   └── scheduler.js      # CronScheduler class
 ├── types/
-│   └── index.d.ts    # Full TypeScript definitions
+│   └── index.d.ts        # Full TypeScript definitions
 ├── package.json
-├── LICENSE           # MIT
+├── LICENSE               # MIT
 └── CONTRIBUTING.md
 ```
 
@@ -410,8 +457,15 @@ Every task execution is logged to `~/.0n/history/` as JSONL — full audit trail
 | **Connection Manager** | Stores credentials as `.0n` files in `~/.0n/connections/` per the .0n standard |
 | **Orchestrator** | The brain — parses natural language, plans multi-step execution, calls APIs, chains data |
 | **CRM Modules** | 245 tools across 12 modules — data-driven, every tool is config not code |
+| **Vault** | Machine-bound encrypted credential storage — AES-256-GCM + PBKDF2-SHA512 |
+| **Vault Container System** | Patent Pending #63/990,046 — 7 semantic layers, multi-party escrow, Seal of Truth, binary .0nv format |
+| **Business Deed Transfer** | Package + escrow + transfer entire digital businesses in encrypted containers |
+| **Conversion Engine** | Import credentials from .env/CSV/JSON, auto-map to 26 services, generate 7 AI platform configs |
+| **Application Engine** | Build, distribute, schedule .0n applications with CronScheduler + HTTP middleware |
+| **Workflow Runtime** | Load and execute `.0n` workflow files with template engine, conditions, and step chaining |
+| **HTTP Server** | Express-based REST API, MCP over HTTP, and webhook receivers |
 | **Rate Limiter** | Per-service rate limits with automatic retry and backoff |
-| **Webhook Handler** | Receive and process external events from connected services |
+| **Webhook Handler** | HMAC-verified event processing — Stripe, CRM, Slack, GitHub, Twilio, Shopify |
 | **Execution History** | Logs every task to `~/.0n/history/` as JSONL — full audit trail |
 | **TypeScript Defs** | Full type coverage for all exports, connections, workflows, and tools |
 
@@ -426,6 +480,16 @@ Every task execution is logged to `~/.0n/history/` as JSONL — full audit trail
 - **Rate limiting** — Built-in per-service rate limits prevent accidental API abuse
 - **Execution history** — Full audit trail in `~/.0n/history/`
 - **Open source** — Audit every line yourself
+
+### 0nVault Container Security (Patent Pending)
+- **AES-256-GCM** encryption for all container layers
+- **Argon2id** double-encryption for credential layer (memory-hard, side-channel resistant)
+- **Ed25519** digital signatures for container authenticity
+- **Seal of Truth** — SHA3-256 content-addressed integrity verification
+- **X25519 ECDH** multi-party escrow — up to 8 parties with per-layer access matrix
+- **Binary .0nv format** — magic bytes `0x304E5350`, tamper-evident structure
+- **Transfer registry** — replay prevention with chain of custody tracking
+- **Machine-bound vault** — PBKDF2-SHA512 (100K iterations) + hardware fingerprint binding
 
 See [SECURITY.md](SECURITY.md) for our security policy and how to report vulnerabilities.
 
@@ -506,7 +570,7 @@ The tool factory handles registration, validation, API calls, error handling —
 
 ### Phase 0 — Foundation (Current)
 
-- [x] **26 services, 550 tools, 13 categories**
+- [x] **26 services, 564 tools, 13 categories**
 - [x] Core orchestration engine with AI planning
 - [x] **245 CRM tools** — full API coverage across 12 modules
 - [x] Gmail, Google Sheets, Google Drive, Jira, Zendesk, Mailchimp, Zoom, Microsoft 365, MongoDB
@@ -589,7 +653,7 @@ We ship weekly. The codebase is active. The community is real. If you're buildin
 
 | Metric | |
 |--------|---|
-| **Tools shipped** | 550 |
+| **Tools shipped** | 564 |
 | **Services integrated** | 26 |
 | **Categories** | 13 |
 | **CRM endpoints covered** | 245 / 245 (100%) |
@@ -640,7 +704,7 @@ node index.js
 
 | Project | Description |
 |---------|-------------|
-| **[0nMCP](https://github.com/0nork/0nMCP)** | Universal AI API Orchestrator — 550 tools, 26 services, natural language interface |
+| **[0nMCP](https://github.com/0nork/0nMCP)** | Universal AI API Orchestrator — 564 tools, 26 services, Vault encryption, Business Deed transfer |
 | **[0n-spec](https://github.com/0nork/0n-spec)** | The .0n Standard — universal configuration format for AI orchestration |
 | **[0nork](https://github.com/0nork/0nork)** | The parent org — AI orchestration infrastructure |
 
@@ -655,7 +719,7 @@ node index.js
 
 <div align="center">
 
-**[Sponsor on GitHub](https://github.com/sponsors/0nork)** · **[Star the repo](https://github.com/0nork/0nMCP)** · **[Tell a friend](https://twitter.com/intent/tweet?text=0nMCP%20-%20550%20tools,%2026%20services,%20zero%20config.%20The%20universal%20AI%20API%20orchestrator.%20Free%20and%20open%20source.&url=https://github.com/0nork/0nMCP)**
+**[Sponsor on GitHub](https://github.com/sponsors/0nork)** · **[Star the repo](https://github.com/0nork/0nMCP)** · **[Tell a friend](https://twitter.com/intent/tweet?text=0nMCP%20-%20564%20tools,%2026%20services,%20zero%20config.%20The%20universal%20AI%20API%20orchestrator.%20Free%20and%20open%20source.&url=https://github.com/0nork/0nMCP)**
 
 </div>
 
@@ -665,7 +729,7 @@ node index.js
 
 ### Stop building workflows. Start describing outcomes.
 
-**550 tools. 26 services. Zero config. MIT licensed. Community driven.**
+**564 tools. 26 services. Zero config. MIT licensed. Community driven.**
 
 **[Get Started](https://github.com/0nork/0nMCP)** · **[Join the Community](https://0nmcp.com/community)** · **[Unlock Schedule](https://0nmcp.com/sponsor)** · **[Read the Docs](https://github.com/0nork/0n-spec)**
 

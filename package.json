@@ -163,6 +163,13 @@
     "sha3",
     "argon2",
     "digital-asset-transfer",
+    "business-deed-transfer",
+    "workflow-runtime",
+    "http-server",
+    "cli",
+    "application-engine",
+    "container",
+    "mcp-registry",
     "0n",
     "0nork",
     "0nmcp"
