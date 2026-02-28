@@ -1,17 +1,17 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.0nork/0nMCP",
-  "description": "Universal AI API Orchestrator — 564 tools, 26 services. Vault, Deed Transfer, App Engine.",
+  "description": "Universal AI API Orchestrator — 819 tools, 48 services. Vault, Deed Transfer, App Engine.",
   "repository": {
     "url": "https://github.com/0nork/0nMCP",
     "source": "github"
   },
-  "version": "2.1.0",
+  "version": "2.2.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "0nmcp",
-      "version": "2.1.0",
+      "version": "2.2.0",
       "transport": {
         "type": "stdio"
       }
