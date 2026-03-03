@@ -2,6 +2,33 @@
 
 All notable changes to 0nMCP are documented here.
 
+## [2.3.0] — 2026-03-03
+
+### Universal Authentication (RFC 8628 Device Authorization Grant)
+- CLI `login`, `logout`, `whoami`, `version` commands
+- Device Authorization Grant flow (RFC 8628) — works in headless/SSH environments
+- Token refresh with rotation (old tokens immediately invalidated)
+- Machine-bound local token encryption (AES-256-GCM + PBKDF2-SHA512)
+- Auth audit trail — all auth events logged with device fingerprint
+- Rate-limited device code + polling endpoints
+- Device management web console
+
+### E2E Encrypted Vault Sync
+- Cross-platform credential sync (CLI <> Web <> Extension)
+- Argon2id + AES-256-GCM end-to-end encryption — server never sees plaintext
+- Conflict resolution with vector clocks
+- Offline-first with automatic reconciliation on reconnect
+
+## [2.2.0] — 2026-02-28
+
+### Massive Service Expansion
+- **819 total tools** (up from 564) — 545 catalog + 245 CRM + 12 vault + 6 deed + 6 engine + 5 app
+- **48 services** (up from 26) across **21 categories** (up from 13)
+- **1,078 total capabilities** — 104 actions + 155 triggers
+- New services: QuickBooks, Asana, Intercom, Dropbox, WhatsApp, Instagram, Twitter/X Ads, TikTok, Google Ads, Facebook Ads, Plaid, Square, LinkedIn Ads, SmartLead, Zapier, MuleSoft, Azure, Pipedrive, LinkedIn, and more
+- AI Mode (Claude) + Keyword Fallback — works with or without Anthropic API key
+- Improved rate limiting and retry logic across all services
+
 ## [2.1.0] — 2026-02-25
 
 ### Business Deed Transfer System
