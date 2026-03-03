@@ -6,6 +6,9 @@
  * 
  * Usage:
  *   npx 0nmcp              Start MCP server (stdio)
+ *   npx 0nmcp login        Authenticate with 0nmcp.com (device auth flow)
+ *   npx 0nmcp logout       Revoke token and clear local auth
+ *   npx 0nmcp whoami       Show authenticated user info
  *   npx 0nmcp serve        Start HTTP server (REST + MCP + webhooks)
  *   npx 0nmcp run <wf>     Run a .0n workflow from CLI
  *   npx 0nmcp init         Initialize ~/.0n directory
@@ -17,6 +20,8 @@
  *   npx 0nmcp migrate      Migrate from ~/.0nmcp to ~/.0n
  *   npx 0nmcp engine       Engine commands (import, verify, platforms, export, open)
  *   npx 0nmcp app          Application commands (run, build, inspect, validate, list)
+ *   npx 0nmcp vault sync   Push local credentials to cloud (E2E encrypted)
+ *   npx 0nmcp vault pull   Pull credentials from cloud to local
  * 
  * ═══════════════════════════════════════════════════════════════════════════
  */
@@ -71,6 +76,33 @@ async function main() {
     return;
   }
 
+  // ── Auth commands (no login required) ──────────────────────
+
+  if (command === 'login') {
+    console.log(BANNER);
+    const { login } = await import('./auth.js');
+    await login();
+    return;
+  }
+
+  if (command === 'logout') {
+    const { logout } = await import('./auth.js');
+    await logout();
+    return;
+  }
+
+  if (command === 'whoami') {
+    const { whoami } = await import('./auth.js');
+    await whoami();
+    return;
+  }
+
+  if (command === 'version' || command === '--version' || command === '-v') {
+    const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, 'package.json'), 'utf8'));
+    console.log(`0nmcp v${pkg.version}`);
+    return;
+  }
+
   // Help
   if (command === 'help' || command === '--help' || command === '-h') {
     console.log(BANNER);
@@ -78,6 +110,9 @@ async function main() {
 ${c.bright}Usage:${c.reset}
 
   ${c.cyan}npx 0nmcp${c.reset}              Start MCP server (stdio, for Claude Desktop)
+  ${c.cyan}npx 0nmcp login${c.reset}        Authenticate with 0nmcp.com
+  ${c.cyan}npx 0nmcp logout${c.reset}       Revoke token and clear local auth
+  ${c.cyan}npx 0nmcp whoami${c.reset}       Show authenticated user info
   ${c.cyan}npx 0nmcp serve${c.reset}        Start HTTP server (REST + MCP + webhooks)
   ${c.cyan}npx 0nmcp run <wf>${c.reset}     Run a .0n workflow from CLI
   ${c.cyan}npx 0nmcp init${c.reset}         Initialize ~/.0n directory
@@ -155,6 +190,23 @@ ${c.bright}Links:${c.reset}
   Discord:       ${c.yellow}https://discord.gg/0nmcp${c.reset}
 `);
     return;
+  }
+
+  // ── Auth Gate ──────────────────────────────────────────────
+  // All commands below this point require authentication.
+  const AUTH_FREE = ['help', '--help', '-h', 'login', 'logout', 'whoami', 'version', '--version', '-v'];
+  if (!AUTH_FREE.includes(command)) {
+    try {
+      const { isAuthenticated } = await import('./auth.js');
+      if (!await isAuthenticated()) {
+        console.log(`\n${c.red}${c.bright}  Authentication required.${c.reset}`);
+        console.log(`  Run: ${c.cyan}0nmcp login${c.reset}\n`);
+        process.exit(1);
+      }
+    } catch (err) {
+      // Auth module load failure — allow through for local-only ops
+      // This handles cases where the module has issues
+    }
   }
 
   // Init
@@ -586,10 +638,101 @@ ${c.bright}Vault Container Commands${c.reset} ${c.yellow}(Patent Pending #63/990
 
   ${c.cyan}vault revoke <id>${c.reset}          Revoke a transfer ID
 
+${c.bright}Vault Sync (E2E Encrypted):${c.reset}
+
+  ${c.cyan}vault sync${c.reset}                   Push local credentials to cloud (encrypted)
+  ${c.cyan}vault pull${c.reset}                   Pull credentials from cloud to local
+  ${c.cyan}vault sync-passphrase${c.reset}        Set/change your sync passphrase
+
 ${c.bright}7 Semantic Layers:${c.reset}
   workflows, credentials, env_vars, mcp_configs,
   site_profiles, ai_brain, audit_trail
 `);
+    return;
+  }
+
+  // ── Vault Sync Commands ──────────────────────────────────
+
+  if (sub === 'sync' && args[1] !== 'passphrase') {
+    const { getToken } = await import('./auth.js');
+    const { pushToCloud } = await import('./vault/sync.js');
+
+    const token = await getToken();
+    if (!token) {
+      console.log(`${c.red}Not authenticated. Run: ${c.cyan}0nmcp login${c.reset}`);
+      return;
+    }
+
+    const passphrase = getFlag(args, '--passphrase') || await promptInput('Sync passphrase: ');
+    if (!passphrase) {
+      console.log(`${c.red}Passphrase required for E2E encryption.${c.reset}`);
+      return;
+    }
+
+    console.log(`\n${c.bright}Encrypting and pushing to cloud...${c.reset}`);
+    const { pushed, errors } = await pushToCloud(token, passphrase);
+
+    console.log(`\n${c.green}✓${c.reset} Pushed ${c.bright}${pushed}${c.reset} credentials (E2E encrypted)`);
+    if (errors.length > 0) {
+      console.log(`${c.red}Errors:${c.reset}`);
+      for (const err of errors) console.log(`  ${c.red}●${c.reset} ${err}`);
+    }
+    return;
+  }
+
+  if (sub === 'pull') {
+    const { getToken } = await import('./auth.js');
+    const { pullFromCloud } = await import('./vault/sync.js');
+
+    const token = await getToken();
+    if (!token) {
+      console.log(`${c.red}Not authenticated. Run: ${c.cyan}0nmcp login${c.reset}`);
+      return;
+    }
+
+    const passphrase = getFlag(args, '--passphrase') || await promptInput('Sync passphrase: ');
+    if (!passphrase) {
+      console.log(`${c.red}Passphrase required to decrypt credentials.${c.reset}`);
+      return;
+    }
+
+    console.log(`\n${c.bright}Pulling and decrypting from cloud...${c.reset}`);
+    const { pulled, errors } = await pullFromCloud(token, passphrase);
+
+    console.log(`\n${c.green}✓${c.reset} Pulled ${c.bright}${pulled}${c.reset} credentials to ~/.0n/connections/`);
+    if (errors.length > 0) {
+      console.log(`${c.red}Errors:${c.reset}`);
+      for (const err of errors) console.log(`  ${c.red}●${c.reset} ${err}`);
+    }
+    return;
+  }
+
+  if (sub === 'sync-passphrase') {
+    const { markSyncSetup, hasSyncSetup } = await import('./vault/sync.js');
+
+    if (hasSyncSetup()) {
+      console.log(`${c.yellow}Sync passphrase was previously configured.${c.reset}`);
+      console.log(`${c.dim}Use your existing passphrase with ${c.cyan}vault sync${c.reset}${c.dim} and ${c.cyan}vault pull${c.reset}${c.dim}.${c.reset}`);
+      console.log(`${c.dim}To change it, use a new passphrase — but you'll need to re-sync all credentials.${c.reset}\n`);
+    }
+
+    const pass1 = await promptInput('New sync passphrase: ');
+    const pass2 = await promptInput('Confirm passphrase: ');
+
+    if (pass1 !== pass2) {
+      console.log(`${c.red}Passphrases do not match.${c.reset}`);
+      return;
+    }
+
+    if (pass1.length < 8) {
+      console.log(`${c.red}Passphrase must be at least 8 characters.${c.reset}`);
+      return;
+    }
+
+    markSyncSetup();
+    console.log(`\n${c.green}✓${c.reset} Sync passphrase configured.`);
+    console.log(`${c.dim}Use ${c.cyan}vault sync${c.reset}${c.dim} to push credentials to cloud.${c.reset}`);
+    console.log(`${c.dim}Use ${c.cyan}vault pull${c.reset}${c.dim} on another device to pull them down.${c.reset}\n`);
     return;
   }
 
