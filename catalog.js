@@ -1791,6 +1791,48 @@ export const SERVICE_CATALOG = {
     }),
   },
 
+  // ── Whimsical ──────────────────────────────────────────────
+  whimsical: {
+    name: "Whimsical",
+    type: "design",
+    description: "Visual collaboration — flowcharts, wireframes, mind maps, docs, sticky notes, and AI-powered diagramming",
+    baseUrl: "https://api.whimsical.com",
+    authType: "oauth",
+    credentialKeys: ["accessToken"],
+    capabilities: [
+      { name: "manage_workspaces", actions: ["list", "get"], description: "List and view workspaces" },
+      { name: "manage_boards", actions: ["list", "get", "create", "update", "delete"], description: "Create and manage whiteboards, flowcharts, wireframes" },
+      { name: "manage_docs", actions: ["list", "get", "create", "update"], description: "Create and manage documents" },
+      { name: "manage_mind_maps", actions: ["list", "get", "create"], description: "Create and manage mind maps" },
+      { name: "generate_diagrams", actions: ["create_from_mermaid", "create_from_text"], description: "AI-powered diagram generation from text or Mermaid markup" },
+      { name: "manage_users", actions: ["list", "create", "update", "deactivate"], description: "SCIM user provisioning and management" },
+    ],
+    endpoints: {
+      list_workspaces:       { method: "GET",  path: "/workspaces" },
+      get_workspace:         { method: "GET",  path: "/workspaces/{workspaceId}" },
+      list_boards:           { method: "GET",  path: "/workspaces/{workspaceId}/boards", query: ["type", "limit", "cursor"] },
+      get_board:             { method: "GET",  path: "/boards/{boardId}" },
+      create_board:          { method: "POST", path: "/workspaces/{workspaceId}/boards", body: { name: "", type: "flowchart" } },
+      update_board:          { method: "PATCH", path: "/boards/{boardId}", body: {} },
+      delete_board:          { method: "DELETE", path: "/boards/{boardId}" },
+      get_board_export:      { method: "GET",  path: "/boards/{boardId}/export", query: ["format"] },
+      list_docs:             { method: "GET",  path: "/workspaces/{workspaceId}/docs", query: ["limit", "cursor"] },
+      get_doc:               { method: "GET",  path: "/docs/{docId}" },
+      create_doc:            { method: "POST", path: "/workspaces/{workspaceId}/docs", body: { title: "", content: "" } },
+      update_doc:            { method: "PATCH", path: "/docs/{docId}", body: {} },
+      create_from_mermaid:   { method: "POST", path: "/boards/from-mermaid", body: { workspaceId: "", mermaid: "", name: "" } },
+      create_from_text:      { method: "POST", path: "/boards/from-text", body: { workspaceId: "", text: "", type: "flowchart" } },
+      list_scim_users:       { method: "GET",  path: "/scim-v2/Users", query: ["filter", "count", "startIndex"] },
+      create_scim_user:      { method: "POST", path: "/scim-v2/Users", body: { schemas: ["urn:ietf:params:scim:schemas:core:2.0:User"], userName: "", name: {} } },
+      update_scim_user:      { method: "PUT",  path: "/scim-v2/Users/{userId}", body: {} },
+      deactivate_scim_user:  { method: "PATCH", path: "/scim-v2/Users/{userId}", body: { Operations: [{ op: "replace", value: { active: false } }] } },
+    },
+    authHeader: (creds) => ({
+      "Authorization": `Bearer ${creds.accessToken}`,
+      "Content-Type": "application/json",
+    }),
+  },
+
 };
 
 // ── Helpers ────────────────────────────────────────────────
