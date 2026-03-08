@@ -1,0 +1,77 @@
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "0nMCP",
+  "alternateName": [
+    "0n",
+    "0nmcp",
+    "0nORK MCP"
+  ],
+  "description": "Universal AI API Orchestrator \u2014 850 tools, 53 services, $0.10/execution. Connect any AI model to any API in natural language. No subscription. Patent Pending.",
+  "url": "https://0nmcp.com",
+  "applicationCategory": "DeveloperApplication",
+  "applicationSubCategory": "AI Automation, API Orchestration, MCP Server",
+  "operatingSystem": "Any",
+  "releaseNotes": "https://github.com/0nork/0nMCP/releases/tag/v2.3.0",
+  "softwareVersion": "2.3.0",
+  "offers": {
+    "@type": "Offer",
+    "price": "0.10",
+    "priceCurrency": "USD",
+    "description": "Per execution \u2014 no subscription required",
+    "priceSpecification": {
+      "@type": "UnitPriceSpecification",
+      "price": 0.1,
+      "priceCurrency": "USD",
+      "unitText": "per execution"
+    }
+  },
+  "creator": {
+    "@type": "Organization",
+    "name": "RocketOpp LLC",
+    "url": "https://0nmcp.com",
+    "founder": {
+      "@type": "Person",
+      "name": "Michael Mento Jr."
+    }
+  },
+  "sameAs": [
+    "https://github.com/0nork/0nMCP",
+    "https://npmjs.com/package/0nmcp",
+    "https://discord.gg/0nmcp"
+  ],
+  "featureList": [
+    "850+ API tools across 53 services",
+    "Natural language workflow execution",
+    "Portable .0n encrypted workflow files",
+    "AES-256-GCM six-layer encryption",
+    "Ed25519 cryptographic signatures",
+    "Pipeline, Assembly Line, and Radial Burst execution models",
+    "Compatible with Claude, GPT, Gemini, and any MCP-capable AI",
+    "Patent Pending: USPTO #63/990,046"
+  ],
+  "keywords": "mcp, model-context-protocol, ai-automation, api-orchestration, zapier-alternative, claude, openai, gemini, stripe, slack, github, automation, no-code",
+  "_0nmcp": {
+    "version": "2.3.0",
+    "tools_count": 850,
+    "services_count": 53,
+    "categories_count": 23,
+    "capabilities_count": 1142,
+    "execution_cost_usd": 0.1,
+    "subscription_required": false,
+    "patent": "USPTO #63/990,046 \u2014 Patent Pending",
+    "install": "npm install 0nmcp",
+    "mcp_endpoint": "https://0nmcp.com",
+    "execution_models": [
+      "Pipeline",
+      "Assembly Line",
+      "Radial Burst"
+    ],
+    "compatible_ai": [
+      "Claude",
+      "ChatGPT",
+      "Gemini",
+      "Any MCP-capable model"
+    ]
+  }
+}
