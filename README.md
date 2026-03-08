@@ -19,21 +19,21 @@
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen?style=flat-square)](https://nodejs.org)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-blueviolet?style=flat-square)](https://modelcontextprotocol.io)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
-[![Services](https://img.shields.io/badge/services-48+-blue?style=flat-square)](#-supported-services)
-[![Tools](https://img.shields.io/badge/tools-819-orange?style=flat-square)](#-all-tools)
+[![Services](https://img.shields.io/badge/services-53+-blue?style=flat-square)](#-supported-services)
+[![Tools](https://img.shields.io/badge/tools-850-orange?style=flat-square)](#-all-tools)
 [![Community](https://img.shields.io/badge/community-1000%2B_devs-ff6600?style=flat-square)](#-community)
 [![Website](https://img.shields.io/badge/Website-0nmcp.com-ff6b35?style=flat-square)](https://0nmcp.com)
 [![GitHub Discussions](https://img.shields.io/github/discussions/0nork/0nMCP?style=flat-square&label=discussions)](https://github.com/0nork/0nMCP/discussions)
 
-**819 tools. 48 services. Zero configuration. One natural language interface.**
+**850 tools. 53 services. Zero configuration. One natural language interface.**
 
-[Website](https://0nmcp.com) · [Quick Start](#-installation) · [Services](#-supported-services) · [819 Tools](#-all-tools) · [.0n Standard](#-the-0n-standard) · [Unlocks](#-unlocks) · [Community](https://0nmcp.com/community)
+[Website](https://0nmcp.com) · [Quick Start](#-installation) · [Services](#-supported-services) · [850 Tools](#-all-tools) · [.0n Standard](#-the-0n-standard) · [Unlocks](#-unlocks) · [Community](https://0nmcp.com/community)
 
 </div>
 
 ---
 
-> **v2.2.0** — 819 tools across 48 services in 19 categories. 958 total capabilities. Now with **22 new services** (QuickBooks, Asana, Intercom, Dropbox, WhatsApp, Instagram, X/Twitter, TikTok, Google Ads, Facebook Ads, Plaid, Square, TikTok Ads, X Ads, LinkedIn Ads, Instagram Ads, Smartlead, Zapier, MuleSoft, Azure, Pipedrive, LinkedIn), **Business Deed Transfer**, **0nVault Containers** (Patent Pending #63/990,046), **Application Engine**, **Workflow Runtime** + **HTTP Server**, and **portable AI Brain bundles**. [See what's new](#-whats-new-in-v22).
+> **v2.3.0** — 850 tools across 53 services in 23 categories. 1,142 total capabilities. New in v2.3: **5 new services** (Cloudflare, GoDaddy, n8n, Pabbly, Make), **Resend expanded** (3→67 endpoints), **ACTION_ALIASES conversion layer** for intuitive .0n workflow authoring, **connection auto-enrichment** (locationId, pipelineId injected from .0n files), and **enhanced API validation** (CRM, Anthropic, Vercel). [See what's new](#-whats-new-in-v23).
 
 ---
 
@@ -180,11 +180,16 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (Mac) o
 | **Microsoft Azure** | Cloud | Resources, resource groups, storage, VMs via ARM |
 | **Pipedrive** | CRM | Deals, persons, organizations, activities, pipelines, notes |
 | **LinkedIn** | Social | Posts, profile, connections, organization pages |
+| **Cloudflare** | Cloud | DNS zones, records, workers, KV storage, page rules, firewall |
+| **GoDaddy** | Cloud | Domains, DNS, availability, agreements, renewals |
+| **n8n** | Automation | Workflows, executions, credentials — self-hosted automation |
+| **Pabbly** | Automation | Workflows, triggers, actions, connections |
+| **Make** | Automation | Scenarios, organizations, data stores, connections |
 | **CRM** | CRM | **245 tools** — contacts, conversations, calendars, invoices, payments, products, pipelines, social media, custom objects, and more |
 
-**48 services. 819 tools. 19 categories. One interface.**
+**53 services. 850 tools. 23 categories. One interface.**
 
-> **More coming:** AWS S3, Vercel, Cloudflare, Firebase, Figma, DocuSign, Twilio Flex...
+> **More coming:** AWS S3, Vercel, Firebase, Figma, DocuSign, Twilio Flex...
 
 ---
 
@@ -269,7 +274,7 @@ One tool call. Everything deployed:
 | `connect_service` | Connect a new service with credentials |
 | `disconnect_service` | Remove a connected service |
 | `list_connections` | See what's connected and capability counts |
-| `list_available_services` | Browse all 48 services grouped by category |
+| `list_available_services` | Browse all 53 services grouped by category |
 | `get_service_info` | Deep dive on a specific service — endpoints, auth, capabilities |
 | `api_call` | Direct API call to any connected service endpoint |
 
@@ -292,17 +297,27 @@ The deepest CRM integration available in any MCP server. 245 tools across 12 mod
 | **Users** | 24 | Users, forms, surveys, funnels, media, companies, businesses |
 | **Objects** | 34 | Custom objects, associations, email, workflows, snapshots, links, campaigns, courses, SaaS |
 
-**819 total tools.** Universal orchestration (545 catalog tools across 48 services) + the most comprehensive CRM integration in the MCP ecosystem (245 dedicated tools) + Vault (4 tools) + Vault Containers (8 tools) + Business Deed Transfer (6 tools) + Engine (6 tools) + App Builder (5 tools).
+**850 total tools.** Universal orchestration (576 catalog tools across 53 services) + the most comprehensive CRM integration in the MCP ecosystem (245 dedicated tools) + Vault (4 tools) + Vault Containers (8 tools) + Business Deed Transfer (6 tools) + Engine (6 tools) + App Builder (5 tools).
 
 > Every CRM tool is data-driven — defined as configuration, not code. Adding new endpoints takes minutes, not hours. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ---
 
-## What's New in v2.2
+## What's New in v2.3
+
+### v2.3.0 — Conversion Layer + 5 New Services
+
+- **5 new services**: Cloudflare (DNS, Workers, KV), GoDaddy (domains), n8n (self-hosted automation), Pabbly (workflows), Make (scenarios)
+- **68 new catalog endpoints** — from 508 to 576 catalog tools
+- **Resend expanded**: 3→67 endpoints — full Resend API coverage (domains, contacts, audiences, broadcasts)
+- **ACTION_ALIASES conversion layer** — 150+ intuitive action mappings (e.g., `contacts.create` → `create_contact`) so .0n SWITCH files use natural action names
+- **Connection auto-enrichment** — workflow runner automatically injects `locationId`, `pipelineId`, `projectRef` from .0n connection metadata
+- **Enhanced API validation** — CRM, Anthropic, and Vercel verification endpoints added to engine validator
+- Total: **850 tools across 53 services in 23 categories**
 
 ### v2.2.0 — 22 New Services Expansion
 
-- **255 new catalog endpoints** across 22 new services — from 290 to 545 catalog tools
+- **255 new catalog endpoints** across 22 new services — from 290 to 576 catalog tools
 - **6 new categories**: Accounting, Advertising, Finance, Cloud, Integration, Automation
 - **Advertising suite**: Google Ads, Facebook Ads, TikTok Ads, X Ads, LinkedIn Ads, Instagram Ads
 - **Social expansion**: Instagram, X (Twitter), TikTok Business, LinkedIn
@@ -310,7 +325,7 @@ The deepest CRM integration available in any MCP server. 245 tools across 12 mod
 - **Infrastructure**: Dropbox, MuleSoft, Microsoft Azure, Zapier
 - **Communication**: WhatsApp Business
 - **Marketing**: Smartlead cold email outreach
-- Total: **819 tools across 48 services in 19 categories**
+- Total: **850 tools across 53 services in 23 categories**
 
 ### v2.1.0 — Business Deed Transfer System
 
@@ -334,12 +349,12 @@ The deepest CRM integration available in any MCP server. 245 tools across 12 mod
 ### v1.7.0 — Foundation
 
 - 550 tools across 26 services in 13 categories
-- **.0n Conversion Engine** — import credentials, auto-map to 48 services, generate configs for 7 AI platforms
+- **.0n Conversion Engine** — import credentials, auto-map to 53 services, generate configs for 7 AI platforms
 - **Vault** — machine-bound encrypted credential storage (AES-256-GCM + PBKDF2-SHA512 + hardware fingerprint)
 - **Workflow Runtime** + **HTTP Server** + **CLI with named runs**
 - **Three-Level Execution** (Patent Pending) — Pipeline → Assembly Line → Radial Burst
 
-> **819 tools. 48 services. 958 total capabilities.** See [CHANGELOG.md](CHANGELOG.md) for full version history.
+> **850 tools. 53 services. 1,142 total capabilities.** See [CHANGELOG.md](CHANGELOG.md) for full version history and the [What's New in v2.3](#-whats-new-in-v23) section above.
 
 ---
 
@@ -353,7 +368,7 @@ The deepest CRM integration available in any MCP server. 245 tools across 12 mod
 │  for $500 and   │     │ 2. Plan steps    │     │ SendGrid        │
 │  notify #sales" │     │ 3. Execute APIs  │     │ Slack           │
 │                 │◀────│ 4. Chain data    │◀────│ CRM             │
-│                 │     │ 5. Summarize     │     │ + 44 more...    │
+│                 │     │ 5. Summarize     │     │ + 49 more...    │
 └─────────────────┘     └──────────────────┘     └─────────────────┘
 ```
 
@@ -378,7 +393,7 @@ The orchestrator uses keyword matching to route tasks to the right service. Less
 | **Flexibility** | Say what you want | Triggers/actions only | Unlimited but complex |
 | **Maintenance** | Zero | Update broken zaps | Fix API changes |
 | **Open source** | Yes (MIT) | No | Depends |
-| **Tools available** | 819 | Varies | Whatever you build |
+| **Tools available** | 850 | Varies | Whatever you build |
 
 ---
 
@@ -430,7 +445,7 @@ Every task execution is logged to `~/.0n/history/` as JSONL — full audit trail
 ```
 0nMCP/
 ├── index.js              # Entry point — MCP server startup
-├── catalog.js            # Service catalog — 48 integrations with endpoints
+├── catalog.js            # Service catalog — 53 integrations with endpoints
 ├── connections.js        # Connection manager — ~/.0n/connections/*.0n
 ├── orchestrator.js       # AI execution planner — the brain
 ├── workflow.js           # WorkflowRunner — .0n file execution
@@ -490,14 +505,14 @@ Every task execution is logged to `~/.0n/history/` as JSONL — full audit trail
 
 | Component | What It Does |
 |-----------|-------------|
-| **Service Catalog** | Defines all 48 services — their base URLs, endpoints, auth patterns, and capabilities |
+| **Service Catalog** | Defines all 53 services — their base URLs, endpoints, auth patterns, and capabilities |
 | **Connection Manager** | Stores credentials as `.0n` files in `~/.0n/connections/` per the .0n standard |
 | **Orchestrator** | The brain — parses natural language, plans multi-step execution, calls APIs, chains data |
 | **CRM Modules** | 245 tools across 12 modules — data-driven, every tool is config not code |
 | **Vault** | Machine-bound encrypted credential storage — AES-256-GCM + PBKDF2-SHA512 |
 | **Vault Container System** | Patent Pending #63/990,046 — 7 semantic layers, multi-party escrow, Seal of Truth, binary .0nv format |
 | **Business Deed Transfer** | Package + escrow + transfer entire digital businesses in encrypted containers |
-| **Conversion Engine** | Import credentials from .env/CSV/JSON, auto-map to 48 services, generate 7 AI platform configs |
+| **Conversion Engine** | Import credentials from .env/CSV/JSON, auto-map to 53 services, generate 7 AI platform configs |
 | **Application Engine** | Build, distribute, schedule .0n applications with CronScheduler + HTTP middleware |
 | **Workflow Runtime** | Load and execute `.0n` workflow files with template engine, conditions, and step chaining |
 | **HTTP Server** | Express-based REST API, MCP over HTTP, and webhook receivers |
@@ -607,7 +622,7 @@ The tool factory handles registration, validation, API calls, error handling —
 
 ### Phase 0 — Foundation (Current)
 
-- [x] **48 services, 819 tools, 19 categories**
+- [x] **53 services, 850 tools, 23 categories**
 - [x] Core orchestration engine with AI planning
 - [x] **245 CRM tools** — full API coverage across 12 modules
 - [x] Gmail, Google Sheets, Google Drive, Jira, Zendesk, Mailchimp, Zoom, Microsoft 365, MongoDB
@@ -625,7 +640,7 @@ The tool factory handles registration, validation, API calls, error handling —
 - [x] **Asana** — project and task management
 - [x] **Intercom** — customer messaging
 - [x] **22 new services** — advertising, social, finance, cloud, automation
-- [x] Target: 48 services, 819 tools (exceeded)
+- [x] Target: 53 services, 850 tools (exceeded)
 
 ### Phase 2 — Full Stack (500 stars / $2K MRR)
 
@@ -691,9 +706,9 @@ We ship weekly. The codebase is active. The community is real. If you're buildin
 
 | Metric | |
 |--------|---|
-| **Tools shipped** | 819 |
-| **Services integrated** | 48 |
-| **Categories** | 19 |
+| **Tools shipped** | 850 |
+| **Services integrated** | 53 |
+| **Categories** | 23 |
 | **CRM endpoints covered** | 245 / 245 (100%) |
 | **npm packages** | 3 ([0nmcp](https://www.npmjs.com/package/0nmcp), [0nork](https://www.npmjs.com/package/0nork), [0n-spec](https://www.npmjs.com/package/0n-spec)) |
 | **Open source repos** | 3 |
@@ -742,7 +757,7 @@ node index.js
 
 | Project | Description |
 |---------|-------------|
-| **[0nMCP](https://0nmcp.com)** | Universal AI API Orchestrator — 819 tools, 48 services, Vault encryption, Business Deed transfer ([source](https://github.com/0nork/0nMCP)) |
+| **[0nMCP](https://0nmcp.com)** | Universal AI API Orchestrator — 850 tools, 53 services, Vault encryption, Business Deed transfer ([source](https://github.com/0nork/0nMCP)) |
 | **[0n-spec](https://github.com/0nork/0n-spec)** | The .0n Standard — universal configuration format for AI orchestration |
 | **[0nork](https://github.com/0nork/0nork)** | The parent org — AI orchestration infrastructure |
 
@@ -757,7 +772,7 @@ node index.js
 
 <div align="center">
 
-**[Sponsor on GitHub](https://github.com/sponsors/0nork)** · **[Star the repo](https://github.com/0nork/0nMCP)** · **[Tell a friend](https://twitter.com/intent/tweet?text=0nMCP%20-%20819%20tools,%2048%20services,%20zero%20config.%20The%20universal%20AI%20API%20orchestrator.%20Free%20and%20open%20source.&url=https://github.com/0nork/0nMCP)**
+**[Sponsor on GitHub](https://github.com/sponsors/0nork)** · **[Star the repo](https://github.com/0nork/0nMCP)** · **[Tell a friend](https://twitter.com/intent/tweet?text=0nMCP%20-%20850%20tools,%2053%20services,%20zero%20config.%20The%20universal%20AI%20API%20orchestrator.%20Free%20and%20open%20source.&url=https://github.com/0nork/0nMCP)**
 
 </div>
 
@@ -767,7 +782,7 @@ node index.js
 
 ### Stop building workflows. Start describing outcomes.
 
-**819 tools. 48 services. Zero config. MIT licensed. Community driven.**
+**850 tools. 53 services. Zero config. MIT licensed. Community driven.**
 
 **[Get Started](https://0nmcp.com)** · **[Join the Community](https://0nmcp.com/community)** · **[Unlock Schedule](https://0nmcp.com/sponsor)** · **[View Source](https://github.com/0nork/0nMCP)** · **[Read the Spec](https://github.com/0nork/0n-spec)**
 

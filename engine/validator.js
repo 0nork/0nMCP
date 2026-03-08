@@ -168,9 +168,21 @@ const VERIFICATION_ENDPOINTS = {
     check: (r) => r.status === 200 || r.status === 400, // 400 = auth works, bad params
   },
   crm: {
-    url: "https://services.leadconnectorhq.com/contacts/?limit=1",
+    url: "https://services.leadconnectorhq.com/calendars/services",
     method: "GET",
     headers: (c) => ({ Authorization: `Bearer ${c.access_token}`, Version: "2021-07-28" }),
+    check: (r) => r.status === 200 || r.status === 400 || r.status === 422, // 400/422 = auth works, missing params
+  },
+  anthropic: {
+    url: "https://api.anthropic.com/v1/models",
+    method: "GET",
+    headers: (c) => ({ "x-api-key": c.apiKey, "anthropic-version": "2023-06-01" }),
+    check: (r) => r.status === 200,
+  },
+  vercel: {
+    url: "https://api.vercel.com/v9/projects",
+    method: "GET",
+    headers: (c) => ({ Authorization: `Bearer ${c.apiKey}` }),
     check: (r) => r.status === 200,
   },
 };

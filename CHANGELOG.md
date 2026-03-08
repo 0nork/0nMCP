@@ -2,7 +2,17 @@
 
 All notable changes to 0nMCP are documented here.
 
-## [2.3.0] — 2026-03-03
+## [2.3.0] — 2026-03-08
+
+### 5 New Services + Conversion Layer
+- **850 total tools** (up from 819) — 576 catalog + 245 CRM + 4 vault + 8 vault container + 6 deed + 6 engine + 5 app
+- **53 services** (up from 48) across **23 categories** (up from 21)
+- **1,142 total capabilities** — 104 actions + 155 triggers
+- New services: Cloudflare (DNS, Workers, KV), GoDaddy (domains), n8n (self-hosted automation), Pabbly (workflows), Make (scenarios)
+- Resend expanded from 3→67 endpoints — full API coverage
+- **ACTION_ALIASES conversion layer** — 150+ intuitive action mappings for .0n SWITCH files
+- **Connection auto-enrichment** — workflow runner injects locationId, pipelineId, projectRef from .0n connection metadata
+- **Enhanced API validation** — CRM, Anthropic, Vercel verification endpoints
 
 ### Universal Authentication (RFC 8628 Device Authorization Grant)
 - CLI `login`, `logout`, `whoami`, `version` commands

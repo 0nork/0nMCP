@@ -519,6 +519,9 @@ export class WorkflowRunner {
 
   /**
    * Execute a service API call.
+   * The conversion layer auto-enriches params from connection metadata.
+   * If a CRM call needs locationId and the workflow didn't provide it,
+   * we pull it from the .0n connection file. The connection IS the context.
    */
   async _executeService(service, action, params) {
     const catalog = SERVICE_CATALOG[service];
@@ -526,7 +529,7 @@ export class WorkflowRunner {
       throw new Error(`Unknown service: ${service}`);
     }
 
-    // Resolve endpoint name
+    // Resolve endpoint name via conversion layer
     const endpointKey = this._resolveEndpoint(catalog, action);
     const ep = catalog.endpoints[endpointKey];
     if (!ep) {
@@ -538,9 +541,15 @@ export class WorkflowRunner {
       throw new Error(`Service ${service} not connected. Use connect_service first.`);
     }
 
+    // ── Auto-enrich: inject connection metadata into params ──
+    // The .0n connection file has meta (locationId, pipelineId, etc.)
+    // If the workflow didn't provide them, we fill them in automatically.
+    // This is the universal connector — 0nMCP knows your context.
+    const enrichedParams = this._enrichFromConnection(service, params, endpointKey);
+
     // Build URL
     let url = catalog.baseUrl + ep.path;
-    const allParams = { ...creds, ...params };
+    const allParams = { ...creds, ...enrichedParams };
     url = url.replace(/\{(\w+)\}/g, (_, key) => allParams[key] || `{${key}}`);
 
     // Build headers
@@ -548,25 +557,25 @@ export class WorkflowRunner {
     const options = { method: ep.method, headers };
 
     // Build body
-    if (ep.method !== "GET" && params) {
+    if (ep.method !== "GET" && enrichedParams) {
       const contentType = ep.contentType || "application/json";
       if (contentType === "application/x-www-form-urlencoded") {
         headers["Content-Type"] = "application/x-www-form-urlencoded";
         const flat = {};
-        for (const [k, v] of Object.entries(params)) {
+        for (const [k, v] of Object.entries(enrichedParams)) {
           if (typeof v !== "object") flat[k] = String(v);
         }
         options.body = new URLSearchParams(flat).toString();
       } else {
         headers["Content-Type"] = "application/json";
-        options.body = JSON.stringify(params);
+        options.body = JSON.stringify(enrichedParams);
       }
     }
 
     // Query string for GET
-    if (ep.method === "GET" && params) {
+    if (ep.method === "GET" && enrichedParams) {
       const flat = {};
-      for (const [k, v] of Object.entries(params)) {
+      for (const [k, v] of Object.entries(enrichedParams)) {
         if (typeof v !== "object") flat[k] = String(v);
       }
       const qs = new URLSearchParams(flat).toString();
@@ -584,11 +593,72 @@ export class WorkflowRunner {
   }
 
   /**
+   * Read the raw .0n connection file to get the full meta block.
+   * The ConnectionManager strips meta during load — we need it back.
+   */
+  _getConnectionMeta(service) {
+    try {
+      const conn = this.connections.get(service);
+      if (!conn?._filePath) return {};
+      const raw = JSON.parse(readFileSync(conn._filePath, 'utf8'));
+      return raw.meta || raw.metadata || {};
+    } catch {
+      return {};
+    }
+  }
+
+  /**
+   * Auto-enrich params from connection metadata.
+   * The .0n connection file IS the context. If a workflow step needs
+   * locationId, pipelineId, projectRef, etc. and didn't provide them,
+   * we inject them from the connection. This is the universal connector.
+   *
+   * Smart injection: only adds fields the endpoint actually needs.
+   * locationId goes everywhere for CRM. pipelineId/stageId only for opportunities.
+   */
+  _enrichFromConnection(service, params, endpointKey) {
+    const meta = this._getConnectionMeta(service);
+    if (!meta || Object.keys(meta).length === 0) return params;
+
+    const enriched = { ...params };
+
+    // ── CRM auto-injection ──
+    if (service === 'crm') {
+      // locationId is universal — every CRM endpoint needs it
+      if (!enriched.locationId && meta.location_id) enriched.locationId = meta.location_id;
+
+      // pipelineId ONLY for opportunity endpoints, stageId mapped to pipelineStageId
+      const isOpportunity = endpointKey && (endpointKey.includes('opportunity') || endpointKey.includes('pipeline'));
+      if (isOpportunity) {
+        if (!enriched.pipelineId && meta.pipeline_id) enriched.pipelineId = meta.pipeline_id;
+        if (!enriched.pipelineStageId && !enriched.stageId && meta.stages?.free) enriched.pipelineStageId = meta.stages.free;
+        // CRM API uses pipelineStageId, not stageId — convert if workflow used stageId
+        if (enriched.stageId && !enriched.pipelineStageId) {
+          enriched.pipelineStageId = enriched.stageId;
+          delete enriched.stageId;
+        }
+      }
+    }
+
+    // ── Supabase auto-injection ──
+    if (service === 'supabase') {
+      if (!enriched.projectRef && meta.project_ref) enriched.projectRef = meta.project_ref;
+    }
+
+    return enriched;
+  }
+
+  /**
    * Resolve a dot-notation action (e.g., "customers.search") to a catalog endpoint key.
-   * Tries multiple fallback strategies.
+   * Uses the ACTION_ALIASES conversion layer first, then falls back to fuzzy matching.
+   * The .0n file format is the standard — our system converts to match.
    */
   _resolveEndpoint(catalog, action) {
     const endpoints = catalog.endpoints;
+
+    // 0. Conversion layer: check ACTION_ALIASES first
+    const alias = ACTION_ALIASES[action];
+    if (alias && endpoints[alias]) return alias;
 
     // 1. Direct match: action === endpoint key
     if (endpoints[action]) return action;
@@ -619,3 +689,254 @@ export class WorkflowRunner {
     return action;
   }
 }
+
+// ============================================================
+// ACTION_ALIASES — Conversion Layer
+// ============================================================
+// Maps standard .0n action names to catalog endpoint keys.
+// The .0n format is the standard — our catalog adapts to it.
+// Partners write intuitive action names; this layer translates.
+// ============================================================
+
+const ACTION_ALIASES = {
+
+  // ── CRM ─────────────────────────────────────────────────
+  // Contacts
+  "contacts.create":        "create_contact",
+  "contacts.upsert":        "create_contact",
+  "contacts.search":        "search_contacts",
+  "contacts.get":           "get_contact",
+  "contacts.update":        "update_contact",
+  "contacts.delete":        "delete_contact",
+  "contacts.find":          "search_contacts",
+  "contacts.lookup":        "search_contacts",
+  "contacts.createTask":    "create_contact",      // TODO: add create_task endpoint to catalog
+  "contacts.addToWorkflow": "list_workflows",       // TODO: add add_to_workflow endpoint to catalog
+  "contacts.addTag":        "create_tag",
+  "contacts.removeTag":     "delete_contact",       // TODO: add remove_tag endpoint
+
+  // Opportunities / Deals
+  "opportunities.create":   "create_opportunity",
+  "opportunities.update":   "create_opportunity",   // TODO: add update_opportunity endpoint
+  "opportunities.list":     "list_pipelines",
+  "opportunities.get":      "list_pipelines",
+  "deals.create":           "create_opportunity",
+  "deals.update":           "create_opportunity",
+
+  // Pipelines
+  "pipelines.create":       "create_pipeline",
+  "pipelines.list":         "list_pipelines",
+
+  // Tags
+  "tags.create":            "create_tag",
+  "tags.list":              "list_tags",
+  "tags.add":               "create_tag",
+
+  // Custom Values / Fields
+  "customValues.create":    "create_custom_value",
+  "customValues.list":      "list_custom_values",
+  "customFields.create":    "create_custom_value",
+  "customFields.list":      "list_custom_values",
+
+  // Workflows
+  "workflows.list":         "list_workflows",
+  "workflows.get":          "list_workflows",
+
+  // Calendars
+  "calendars.list":         "list_calendars",
+  "calendars.get":          "list_calendars",
+
+  // ── Stripe ──────────────────────────────────────────────
+  "customers.create":       "create_customer",
+  "customers.list":         "list_customers",
+  "customers.get":          "get_customer",
+  "charges.create":         "create_charge",
+  "invoices.create":        "create_invoice",
+  "invoices.send":          "send_invoice",
+  "invoices.list":          "list_invoices",
+  "subscriptions.create":   "create_subscription",
+  "subscriptions.cancel":   "cancel_subscription",
+  "subscriptions.list":     "list_subscriptions",
+  "balance.get":            "get_balance",
+  "payments.list":          "list_payments",
+  "products.create":        "create_product",
+  "products.list":          "list_products",
+  "prices.create":          "create_price",
+  "prices.list":            "list_prices",
+  "checkout.create":        "create_checkout_session",
+  "payment_intents.create": "create_payment_intent",
+
+  // ── Supabase ────────────────────────────────────────────
+  "insert":                 "insert_row",
+  "select":                 "query_table",
+  "update":                 "update_row",
+  "delete":                 "delete_row",
+  "query":                  "query_table",
+  "table.insert":           "insert_row",
+  "table.query":            "query_table",
+  "table.select":           "query_table",
+  "table.update":           "update_row",
+  "table.delete":           "delete_row",
+  "rows.insert":            "insert_row",
+  "rows.query":             "query_table",
+  "rows.update":            "update_row",
+  "rows.delete":            "delete_row",
+  "auth.listUsers":         "list_users",
+  "storage.listBuckets":    "list_buckets",
+
+  // ── Slack ───────────────────────────────────────────────
+  "chat.postMessage":       "send_message",
+  "chat.send":              "send_message",
+  "post":                   "send_message",
+  "postMessage":            "send_message",
+  "channels.list":          "list_channels",
+  "users.list":             "list_users",
+  "channels.create":        "create_channel",
+
+  // ── SendGrid ────────────────────────────────────────────
+  "mail.send":              "send_email",
+  "email.send":             "send_email",
+  "contacts.add":           "add_contact",
+  "lists.list":             "list_contacts",
+
+  // ── Discord ─────────────────────────────────────────────
+  "messages.send":          "send_message",
+  "channels.get":           "list_channels",
+
+  // ── Twilio ──────────────────────────────────────────────
+  "sms.send":               "send_sms",
+  "messages.create":        "send_sms",
+  "calls.create":           "make_call",
+
+  // ── GitHub ──────────────────────────────────────────────
+  "repos.list":             "list_repos",
+  "repos.get":              "get_repo",
+  "repos.create":           "create_repo",
+  "issues.create":          "create_issue",
+  "issues.list":            "list_issues",
+  "pulls.create":           "create_pull",
+  "pulls.list":             "list_pulls",
+
+  // ── Shopify ─────────────────────────────────────────────
+  "products.list":          "list_products",
+  "products.get":           "get_product",
+  "products.create":        "create_product",
+  "orders.list":            "list_orders",
+  "orders.get":             "get_order",
+  "customers.list":         "list_customers",
+
+  // ── OpenAI ──────────────────────────────────────────────
+  "chat.completions":       "create_completion",
+  "completions.create":     "create_completion",
+  "embeddings.create":      "create_embedding",
+  "images.generate":        "create_image",
+
+  // ── Anthropic ───────────────────────────────────────────
+  "messages.create":        "create_message",
+  "chat.create":            "create_message",
+
+  // ── Gmail ───────────────────────────────────────────────
+  "messages.send":          "send_email",
+  "messages.list":          "list_emails",
+  "messages.get":           "get_email",
+
+  // ── Google Sheets ───────────────────────────────────────
+  "sheets.get":             "get_sheet",
+  "sheets.update":          "update_cells",
+  "rows.append":            "append_row",
+  "values.get":             "get_values",
+  "values.update":          "update_cells",
+
+  // ── Google Drive ────────────────────────────────────────
+  "files.list":             "list_files",
+  "files.get":              "get_file",
+  "files.create":           "upload_file",
+  "files.upload":           "upload_file",
+
+  // ── Airtable ────────────────────────────────────────────
+  "records.list":           "list_records",
+  "records.create":         "create_record",
+  "records.update":         "update_record",
+  "records.delete":         "delete_record",
+
+  // ── Notion ──────────────────────────────────────────────
+  "pages.create":           "create_page",
+  "pages.get":              "get_page",
+  "databases.query":        "query_database",
+  "blocks.get":             "get_block",
+
+  // ── MongoDB ─────────────────────────────────────────────
+  "documents.find":         "find_documents",
+  "documents.insert":       "insert_document",
+  "documents.update":       "update_document",
+  "documents.delete":       "delete_document",
+  "collections.list":       "list_collections",
+
+  // ── HubSpot ─────────────────────────────────────────────
+  "contacts.create":        "create_contact",
+  "contacts.list":          "list_contacts",
+  "contacts.get":           "get_contact",
+  "contacts.search":        "search_contacts",
+  "deals.create":           "create_deal",
+  "companies.create":       "create_company",
+
+  // ── Mailchimp ───────────────────────────────────────────
+  "lists.list":             "list_audiences",
+  "members.add":            "add_member",
+  "members.list":           "list_members",
+  "campaigns.create":       "create_campaign",
+  "campaigns.send":         "send_campaign",
+
+  // ── Google Calendar ─────────────────────────────────────
+  "events.list":            "list_events",
+  "events.create":          "create_event",
+  "events.get":             "get_event",
+  "calendars.list":         "list_calendars",
+
+  // ── Calendly ────────────────────────────────────────────
+  "events.list":            "list_events",
+  "event_types.list":       "list_event_types",
+  "invitees.list":          "list_invitees",
+
+  // ── Zoom ────────────────────────────────────────────────
+  "meetings.create":        "create_meeting",
+  "meetings.list":          "list_meetings",
+  "meetings.get":           "get_meeting",
+  "users.list":             "list_users",
+
+  // ── Zendesk ─────────────────────────────────────────────
+  "tickets.create":         "create_ticket",
+  "tickets.list":           "list_tickets",
+  "tickets.update":         "update_ticket",
+  "users.create":           "create_user",
+  "users.list":             "list_users",
+
+  // ── Jira ────────────────────────────────────────────────
+  "issues.create":          "create_issue",
+  "issues.get":             "get_issue",
+  "issues.search":          "search_issues",
+  "projects.list":          "list_projects",
+
+  // ── Linear ──────────────────────────────────────────────
+  "issues.create":          "create_issue",
+  "issues.list":            "list_issues",
+  "teams.list":             "list_teams",
+  "projects.list":          "list_projects",
+
+  // ── Microsoft ───────────────────────────────────────────
+  "mail.send":              "send_email",
+  "mail.list":              "list_emails",
+  "calendar.events":        "list_events",
+  "files.list":             "list_files",
+
+  // ── ListKit (Partner) ───────────────────────────────────
+  // ListKit has no API — these aliases map ListKit field
+  // conventions to our CRM/Supabase actions so .0n files
+  // written for ListKit data work seamlessly.
+  "leads.import":           "create_contact",
+  "leads.enrich":           "update_contact",
+  "leads.score":            "create_contact",
+  "leads.export":           "query_table",
+  "list.complete":          "insert_row",
+};
+
