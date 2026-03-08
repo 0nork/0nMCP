@@ -348,7 +348,7 @@ The deepest CRM integration available in any MCP server. 245 tools across 12 mod
 
 ### v1.7.0 — Foundation
 
-- 550 tools across 26 services in 13 categories
+- 550 tools across 53 services in 13 categories
 - **.0n Conversion Engine** — import credentials, auto-map to 53 services, generate configs for 7 AI platforms
 - **Vault** — machine-bound encrypted credential storage (AES-256-GCM + PBKDF2-SHA512 + hardware fingerprint)
 - **Workflow Runtime** + **HTTP Server** + **CLI with named runs**
@@ -486,7 +486,7 @@ Every task execution is logged to `~/.0n/history/` as JSONL — full audit trail
 ├── engine/               # .0n Conversion Engine + App Builder
 │   ├── index.js          # Engine entry — 6 tools
 │   ├── parser.js         # Multi-format credential parser
-│   ├── mapper.js         # Auto-map credentials to 26 services
+│   ├── mapper.js         # Auto-map credentials to 53 services
 │   ├── validator.js      # API key verification
 │   ├── platforms.js      # 7 AI platform config generators
 │   ├── bundler.js        # Portable .0n bundle creator
