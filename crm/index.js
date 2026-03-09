@@ -50,8 +50,9 @@ export {
  * Register ALL CRM tools on the MCP server.
  * @param {import("@modelcontextprotocol/sdk/server/mcp.js").McpServer} server
  * @param {import("zod")} z
+ * @param {import("../capability-proxy.js").CapabilityProxy} [proxy]
  */
-export function registerCrmTools(server, z) {
+export function registerCrmTools(server, z, proxy) {
   // 1. Auth & custom-logic tools (OAuth, snapshot deploy, workflow process)
   registerAuthTools(server, z);
 
@@ -72,7 +73,7 @@ export function registerCrmTools(server, z) {
 
   let totalTools = 5; // auth tools count
   for (const cat of categories) {
-    registerTools(server, z, cat.defs);
+    registerTools(server, z, cat.defs, proxy);
     totalTools += cat.defs.length;
   }
 

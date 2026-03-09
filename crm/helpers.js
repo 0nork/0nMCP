@@ -35,7 +35,7 @@ export function crmHeaders(accessToken) {
  * Every tool automatically receives `access_token` (required) and
  * `location_id` (optional) parameters.
  */
-export function registerTools(server, z, definitions) {
+export function registerTools(server, z, definitions, proxy) {
   for (const def of definitions) {
     const schema = buildSchema(z, def);
 
@@ -93,11 +93,14 @@ export function registerTools(server, z, definitions) {
           }
         }
 
-        const res = await fetch(url, options);
-        const data = await res.json().catch(() => ({
-          status: res.status,
-          statusText: res.statusText,
-        }));
+        // Execute through capability proxy (rate-limited, audited)
+        // CRM tools receive access_token per-call from AI client, not from ConnectionManager
+        const { response: res, data } = proxy
+          ? await proxy.callWithCredentials("crm", def.name, url, options)
+          : await fetch(url, options).then(async r => ({
+              response: r,
+              data: await r.json().catch(() => ({ status: r.status, statusText: r.statusText })),
+            }));
 
         return {
           content: [

@@ -16,7 +16,7 @@ import { SERVICE_CATALOG, listServices, getService } from "./catalog.js";
  * @param {import("./orchestrator.js").Orchestrator} orchestrator
  * @param {import("./workflow.js").WorkflowRunner} [workflowRunner]
  */
-export function registerAllTools(server, connections, orchestrator, workflowRunner) {
+export function registerAllTools(server, connections, orchestrator, workflowRunner, proxy) {
   // ─── execute ───────────────────────────────────────────
   server.tool(
     "execute",
@@ -291,41 +291,8 @@ Examples:
       }
 
       try {
-        let url = catalog.baseUrl + ep.path;
-        const allParams = { ...creds, ...(params || {}) };
-
-        // Substitute path params
-        url = url.replace(/\{(\w+)\}/g, (_, key) => allParams[key] || `{${key}}`);
-
-        const headers = catalog.authHeader(creds);
-        const options = { method: ep.method, headers };
-
-        if (ep.method !== "GET" && params) {
-          const contentType = ep.contentType || "application/json";
-          if (contentType === "application/x-www-form-urlencoded") {
-            headers["Content-Type"] = "application/x-www-form-urlencoded";
-            const flat = {};
-            for (const [k, v] of Object.entries(params)) {
-              if (typeof v !== "object") flat[k] = String(v);
-            }
-            options.body = new URLSearchParams(flat).toString();
-          } else {
-            headers["Content-Type"] = "application/json";
-            options.body = JSON.stringify(params);
-          }
-        }
-
-        if (ep.method === "GET" && params) {
-          const flat = {};
-          for (const [k, v] of Object.entries(params)) {
-            if (typeof v !== "object") flat[k] = String(v);
-          }
-          const qs = new URLSearchParams(flat).toString();
-          if (qs) url += (url.includes("?") ? "&" : "?") + qs;
-        }
-
-        const response = await fetch(url, options);
-        const data = await response.json().catch(() => ({ status: response.status, statusText: response.statusText }));
+        // Execute through capability proxy (rate-limited, audited, zero-knowledge)
+        const { response, data } = await proxy.call(service, endpoint, params || {});
 
         return {
           content: [{

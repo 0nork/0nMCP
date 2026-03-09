@@ -38,9 +38,11 @@ const CAPABILITY_KEYWORDS = {
 export class Orchestrator {
   /**
    * @param {import("./connections.js").ConnectionManager} connectionManager
+   * @param {import("./capability-proxy.js").CapabilityProxy} [proxy]
    */
-  constructor(connectionManager) {
+  constructor(connectionManager, proxy) {
     this.connections = connectionManager;
+    this.proxy = proxy;
     this.anthropic = null;
 
     // Dynamically import Anthropic SDK if key is available
@@ -277,14 +279,7 @@ Rules:
     }
 
     try {
-      // Build URL
-      let url = service.baseUrl + endpoint.path;
-
-      // Substitute path params from step.params and credentials
-      const allParams = { ...creds, ...step.params };
-      url = url.replace(/\{(\w+)\}/g, (_, key) => allParams[key] || `{${key}}`);
-
-      // Substitute context references {{label.field}}
+      // Substitute context references {{label.field}} in params
       if (step.params) {
         const paramsStr = JSON.stringify(step.params);
         const resolved = paramsStr.replace(/\{\{(\w+)\.(\w+)\}\}/g, (_, label, field) => {
@@ -293,32 +288,8 @@ Rules:
         step.params = JSON.parse(resolved);
       }
 
-      // Build headers
-      const headers = service.authHeader(creds);
-
-      // Build request options
-      const options = { method: endpoint.method, headers };
-
-      if (endpoint.method !== "GET" && step.params) {
-        const contentType = endpoint.contentType || "application/json";
-        if (contentType === "application/x-www-form-urlencoded") {
-          headers["Content-Type"] = "application/x-www-form-urlencoded";
-          options.body = new URLSearchParams(this._flattenParams(step.params)).toString();
-        } else {
-          headers["Content-Type"] = "application/json";
-          options.body = JSON.stringify(step.params);
-        }
-      }
-
-      // Add query params for GET requests
-      if (endpoint.method === "GET" && step.params) {
-        const queryStr = new URLSearchParams(this._flattenParams(step.params)).toString();
-        if (queryStr) url += (url.includes("?") ? "&" : "?") + queryStr;
-      }
-
-      // Execute
-      const response = await fetch(url, options);
-      const data = await response.json().catch(() => ({ status: response.status }));
+      // Execute through capability proxy (rate-limited, audited, zero-knowledge)
+      const { response, data } = await this.proxy.call(step.service, step.endpoint, step.params || {});
 
       return {
         success: response.ok,

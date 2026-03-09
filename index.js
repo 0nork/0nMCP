@@ -32,30 +32,33 @@ import { registerContainerTools } from "./vault/tools-container.js";
 import { registerDeedTools } from "./vault/tools-deed.js";
 import { unsealedCache } from "./vault/cache.js";
 import { registerEngineTools } from "./engine/index.js";
+import { CapabilityProxy } from "./capability-proxy.js";
+import { SERVICE_CATALOG } from "./catalog.js";
 
 // ── Initialize ─────────────────────────────────────────────
 const connections = new ConnectionManager();
 connections._vaultCache = unsealedCache;
-const orchestrator = new Orchestrator(connections);
-const workflowRunner = new WorkflowRunner(connections);
+const proxy = new CapabilityProxy(connections, SERVICE_CATALOG);
+const orchestrator = new Orchestrator(connections, proxy);
+const workflowRunner = new WorkflowRunner(connections, proxy);
 
 const server = new McpServer({
   name: "0nMCP",
-  version: "2.1.0",
+  version: "2.2.0",
 });
 
 // ============================================================
 // REGISTER ALL TOOLS
 // ============================================================
 
-registerAllTools(server, connections, orchestrator, workflowRunner);
+registerAllTools(server, connections, orchestrator, workflowRunner, proxy);
 
 // ============================================================
 // SERVICE-SPECIFIC TOOLS
 // ============================================================
 
 import { z } from "zod";
-registerCrmTools(server, z);
+registerCrmTools(server, z, proxy);
 
 // ============================================================
 // VAULT TOOLS (machine-bound credential encryption)

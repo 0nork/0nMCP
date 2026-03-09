@@ -236,9 +236,11 @@ export const INTERNAL_ACTIONS = {
 export class WorkflowRunner {
   /**
    * @param {import("./connections.js").ConnectionManager} connections
+   * @param {import("./capability-proxy.js").CapabilityProxy} [proxy]
    */
-  constructor(connections) {
+  constructor(connections, proxy) {
     this.connections = connections;
+    this.proxy = proxy;
     this._resolverReady = loadResolver();
   }
 
@@ -547,7 +549,7 @@ export class WorkflowRunner {
     // This is the universal connector — 0nMCP knows your context.
     const enrichedParams = this._enrichFromConnection(service, params, endpointKey);
 
-    // Build URL
+    // Build URL with enriched params (connection metadata auto-injected)
     let url = catalog.baseUrl + ep.path;
     const allParams = { ...creds, ...enrichedParams };
     url = url.replace(/\{(\w+)\}/g, (_, key) => allParams[key] || `{${key}}`);
@@ -582,8 +584,9 @@ export class WorkflowRunner {
       if (qs) url += (url.includes("?") ? "&" : "?") + qs;
     }
 
-    const response = await fetch(url, options);
-    const data = await response.json().catch(() => ({ status: response.status, statusText: response.statusText }));
+    // Execute through capability proxy (rate-limited, audited)
+    // Workflow builds its own URL/headers due to auto-enrichment from connection metadata
+    const { response, data } = await this.proxy.callWithCredentials(service, endpointKey, url, options);
 
     if (!response.ok) {
       throw new Error(`${service}.${action} failed (${response.status}): ${JSON.stringify(data)}`);
