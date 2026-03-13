@@ -1,11 +1,11 @@
 {
-  "generated": "2026-03-08T12:00:00.000Z",
-  "catalogVersion": "2.3.0",
-  "services": 53,
-  "tools": 576,
+  "generated": "2026-03-13T00:31:43.573Z",
+  "catalogVersion": "2.2.0",
+  "services": 48,
+  "tools": 545,
   "actions": 104,
   "triggers": 155,
-  "categories": 23,
+  "categories": 21,
   "perService": {
     "crm": {
       "name": "CRM",
@@ -1407,6 +1407,6 @@
   "deedTools": 6,
   "engineTools": 6,
   "appTools": 5,
-  "totalTools": 850,
-  "totalCapabilities": 1142
+  "totalTools": 819,
+  "totalCapabilities": 1078
 }
