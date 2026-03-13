@@ -7,13 +7,13 @@
     "0nmcp",
     "0nORK MCP"
   ],
-  "description": "Universal AI API Orchestrator \u2014 850 tools, 53 services, $0.10/execution. Connect any AI model to any API in natural language. No subscription. Patent Pending.",
+  "description": "Universal AI API Orchestrator \u2014 870+ tools, 54 services, Zero-Knowledge Capability Proxy, $0.10/execution. Connect any AI model to any API in natural language. No subscription. Patent Pending.",
   "url": "https://0nmcp.com",
   "applicationCategory": "DeveloperApplication",
   "applicationSubCategory": "AI Automation, API Orchestration, MCP Server",
   "operatingSystem": "Any",
-  "releaseNotes": "https://github.com/0nork/0nMCP/releases/tag/v2.3.0",
-  "softwareVersion": "2.3.0",
+  "releaseNotes": "https://github.com/0nork/0nMCP/releases/tag/v2.4.0",
+  "softwareVersion": "2.4.0",
   "offers": {
     "@type": "Offer",
     "price": "0.10",
@@ -41,7 +41,8 @@
     "https://discord.gg/0nmcp"
   ],
   "featureList": [
-    "850+ API tools across 53 services",
+    "870+ API tools across 54 services",
+    "Zero-Knowledge Capability Proxy — credentials never persist in memory",
     "Natural language workflow execution",
     "Portable .0n encrypted workflow files",
     "AES-256-GCM six-layer encryption",
@@ -52,9 +53,9 @@
   ],
   "keywords": "mcp, model-context-protocol, ai-automation, api-orchestration, zapier-alternative, claude, openai, gemini, stripe, slack, github, automation, no-code",
   "_0nmcp": {
-    "version": "2.3.0",
-    "tools_count": 850,
-    "services_count": 53,
+    "version": "2.4.0",
+    "tools_count": 870,
+    "services_count": 54,
     "categories_count": 23,
     "capabilities_count": 1142,
     "execution_cost_usd": 0.1,

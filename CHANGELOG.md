@@ -2,6 +2,22 @@
 
 All notable changes to 0nMCP are documented here.
 
+## [2.4.0] — 2026-03-12
+
+### Zero-Knowledge Capability Proxy
+- All service API calls now route through `CapabilityProxy` — credentials borrowed in-memory, wiped after each call
+- Rate limiting (`ratelimit.js`) fully wired for all 54 services — no more unthrottled calls
+- Audit log at `~/.0n/history/audit.jsonl` — every API call tracked, no credentials in logs
+- Retry with exponential backoff on 429/5xx responses
+- CRM tools use `callWithCredentials()` for per-call access_token pattern
+- **54 services** (up from 53) — Whimsical added (18 endpoints)
+- **594 catalog endpoints**, **~870 total tools**
+
+### Docker & Registry
+- Official Dockerfile for containerized MCP deployment (Node 18 Alpine)
+- Glama MCP directory listing compatibility
+- `.well-known/0n-manifest.json` for AI crawler discovery
+
 ## [2.3.0] — 2026-03-08
 
 ### 5 New Services + Conversion Layer
