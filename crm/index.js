@@ -30,6 +30,7 @@ import knowledgeBase from "./knowledge-base.js";
 import voiceAi from "./voice-ai.js";
 import saas from "./saas.js";
 import funnels from "./funnels.js"; // includes forms, surveys, associations, snapshots
+import agentStudio from "./agent-studio.js";
 
 // Re-export definitions + helpers for external consumers (e.g. CRM bridges)
 export {
@@ -48,6 +49,7 @@ export {
   voiceAi,
   saas,
   funnels,
+  agentStudio,
   crmHeaders,
   CRM_API_BASE,
   API_VERSION,
@@ -81,6 +83,7 @@ export function registerCrmTools(server, z, proxy) {
     { name: "Voice AI", defs: voiceAi },
     { name: "SaaS & Billing", defs: saas },
     { name: "Funnels, Forms, Surveys & More", defs: funnels },
+    { name: "Agent Studio", defs: agentStudio },
   ];
 
   let totalTools = 5; // auth tools count
