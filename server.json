@@ -1,20 +1,27 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.0nork/0nMCP",
-  "description": "Universal AI API Orchestrator — 819 tools, 48 services. Vault, Deed Transfer, App Engine.",
+  "title": "0nMCP — Universal AI API Orchestrator",
+  "description": "1,171 tools across 54 services — CRM, Stripe, Slack, GitHub, and more. Vault + workflows.",
   "repository": {
     "url": "https://github.com/0nork/0nMCP",
     "source": "github"
   },
-  "version": "2.2.0",
+  "version": "2.5.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "0nmcp",
-      "version": "2.2.0",
+      "version": "2.5.0",
       "transport": {
         "type": "stdio"
       }
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://0nmcp.com/api/mcp"
     }
   ]
 }
