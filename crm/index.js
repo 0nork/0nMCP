@@ -26,6 +26,10 @@ import locations from "./locations.js";
 import social from "./social.js";
 import users from "./users.js";
 import objects from "./objects.js";
+import knowledgeBase from "./knowledge-base.js";
+import voiceAi from "./voice-ai.js";
+import saas from "./saas.js";
+import funnels from "./funnels.js"; // includes forms, surveys, associations, snapshots
 
 // Re-export definitions + helpers for external consumers (e.g. CRM bridges)
 export {
@@ -40,6 +44,10 @@ export {
   social,
   users,
   objects,
+  knowledgeBase,
+  voiceAi,
+  saas,
+  funnels,
   crmHeaders,
   CRM_API_BASE,
   API_VERSION,
@@ -69,6 +77,10 @@ export function registerCrmTools(server, z, proxy) {
     { name: "Social & Blogs", defs: social },
     { name: "Users & Forms", defs: users },
     { name: "Objects & Misc", defs: objects },
+    { name: "Knowledge Base", defs: knowledgeBase },
+    { name: "Voice AI", defs: voiceAi },
+    { name: "SaaS & Billing", defs: saas },
+    { name: "Funnels, Forms, Surveys & More", defs: funnels },
   ];
 
   let totalTools = 5; // auth tools count
