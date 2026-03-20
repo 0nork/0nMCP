@@ -2,17 +2,17 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.0nork/0nMCP",
   "title": "0nMCP — Universal AI API Orchestrator",
-  "description": "1,171 tools across 54 services — CRM, Stripe, Slack, GitHub, and more. Vault + workflows.",
+  "description": "1,229 tools, 54 services. CRM, Stripe, Slack, GitHub + Knowledge Base, Voice AI, Agent Studio.",
   "repository": {
     "url": "https://github.com/0nork/0nMCP",
     "source": "github"
   },
-  "version": "2.5.0",
+  "version": "2.6.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "0nmcp",
-      "version": "2.5.0",
+      "version": "2.6.0",
       "transport": {
         "type": "stdio"
       }
