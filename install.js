@@ -263,9 +263,121 @@ async function deviceAuth() {
   throw new Error("timeout");
 }
 
+// ── Step 6: Social Viral Post ──────────────────────────────
+
+async function generateViralPost(authData, rl) {
+  const socialPlatforms = [
+    { name: "LinkedIn", id: "linkedin" },
+    { name: "X (Twitter)", id: "twitter" },
+    { name: "Instagram", id: "instagram" },
+    { name: "Facebook", id: "facebook" },
+  ];
+
+  console.log(`  ${c.b}Want to let the world know you're 0n?${c.x}`);
+  console.log(`  ${c.dim}0n will craft a personalized post about your experience.${c.x}\n`);
+
+  for (let i = 0; i < socialPlatforms.length; i++) {
+    console.log(`  ${c.cy}${i + 1}.${c.x} ${socialPlatforms[i].name}`);
+  }
+  console.log(`  ${c.dim}0.${c.x} Skip\n`);
+
+  const choice = await ask(rl, `  ${c.b}Choose a platform (0-${socialPlatforms.length}): ${c.x}`);
+  const idx = parseInt(choice, 10);
+
+  if (!idx || idx < 1 || idx > socialPlatforms.length) {
+    console.log(`  ${c.dim}Skipped. You can generate a post later with: npx 0nmcp post${c.x}`);
+    return;
+  }
+
+  const selectedPlatform = socialPlatforms[idx - 1];
+  console.log(`\n  ${c.g}Selected: ${selectedPlatform.name}${c.x}\n`);
+
+  // Gather user info for PACG
+  const bio = await ask(rl, `  ${c.b}Your role/bio (one line): ${c.x}`);
+  const interestsRaw = await ask(rl, `  ${c.b}Your interests (comma-separated): ${c.x}`);
+  const interests = interestsRaw.split(",").map((s) => s.trim()).filter(Boolean);
+
+  const userName = authData.user?.name || authData.user?.email?.split("@")[0] || "User";
+
+  // Generate post via API
+  const s = spinner("0n is crafting your post...");
+
+  try {
+    const { ok, data } = await apiPost("/api/social/generate-post", {
+      user_id: authData.user?.id,
+      name: userName,
+      bio: bio || undefined,
+      platform: selectedPlatform.id,
+      interests: interests.length > 0 ? interests : undefined,
+    });
+
+    if (!ok || !data.post) {
+      s.fail("Post generation failed — you can try later with: npx 0nmcp post");
+      return;
+    }
+
+    s.stop("Post generated!\n");
+
+    // Display the post
+    console.log(`  ${c.b}┌─── Your "${selectedPlatform.name}" Post ────────────────────────${c.x}`);
+    console.log(`  ${c.b}│${c.x}`);
+    const lines = data.post.split("\n");
+    for (const line of lines) {
+      console.log(`  ${c.b}│${c.x}  ${line}`);
+    }
+    console.log(`  ${c.b}│${c.x}`);
+    console.log(`  ${c.b}└──────────────────────────────────────────────────${c.x}`);
+
+    // Archetype info
+    if (data.archetype) {
+      const a = data.archetype;
+      console.log(`\n  ${c.dim}Archetype: ${a.tier} · ${a.domain} · ${a.style} · ${a.vocabularyLevel}${c.x}`);
+    }
+
+    // Ask to publish or copy
+    console.log("");
+    console.log(`  ${c.cy}1.${c.x} Copy to clipboard`);
+    console.log(`  ${c.cy}2.${c.x} Save to file`);
+    console.log(`  ${c.cy}3.${c.x} Regenerate`);
+    console.log(`  ${c.dim}0.${c.x} Skip\n`);
+
+    const action = await ask(rl, `  ${c.b}Action (0-3): ${c.x}`);
+
+    if (action === "1") {
+      try {
+        const { execSync } = await import("child_process");
+        if (platform() === "darwin") {
+          execSync(`echo ${JSON.stringify(data.post)} | pbcopy`);
+          console.log(`\n  ${c.g}✓ Copied to clipboard!${c.x} Paste it on ${selectedPlatform.name}.`);
+        } else {
+          // Linux/Windows fallback
+          console.log(`\n  ${c.dim}Copy the post above and paste it on ${selectedPlatform.name}.${c.x}`);
+        }
+      } catch {
+        console.log(`\n  ${c.dim}Copy the post above and paste it on ${selectedPlatform.name}.${c.x}`);
+      }
+    } else if (action === "2") {
+      const filePath = join(homedir(), `.0n/drafts/${selectedPlatform.id}-post.txt`);
+      const draftsDir = join(homedir(), ".0n/drafts");
+      if (!existsSync(draftsDir)) mkdirSync(draftsDir, { recursive: true });
+      writeFileSync(filePath, data.post);
+      console.log(`\n  ${c.g}✓ Saved to ${filePath}${c.x}`);
+    } else if (action === "3") {
+      // Regenerate (recursive)
+      return generateViralPost(authData, rl);
+    } else {
+      console.log(`  ${c.dim}Post saved. Find it later at: npx 0nmcp post${c.x}`);
+    }
+  } catch (err) {
+    s.fail(`Post generation failed: ${err.message}`);
+  }
+}
+
 // ── Main Install Flow ──────────────────────────────────────
 
 export async function install() {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+
   console.log("");
   console.log(`  ${c.g}${c.b}╔══════════════════════════════════════════╗${c.x}`);
   console.log(`  ${c.g}${c.b}║                                          ║${c.x}`);
@@ -338,7 +450,11 @@ export async function install() {
     }
   }
 
-  // ── Step 6: Final Output ──
+  // ── Step 6: Social Post — "I just turned 0n" ──
+  console.log("");
+  await generateViralPost(authData, rl);
+
+  // ── Step 7: Final Output ──
   console.log("");
   console.log(`  ${c.g}${c.b}╔══════════════════════════════════════════╗${c.x}`);
   console.log(`  ${c.g}${c.b}║                                          ║${c.x}`);
@@ -366,4 +482,6 @@ export async function install() {
   if (claudeConfigured) {
     console.log(`  ${c.y}⚡ Restart Claude Desktop to activate 0nMCP.${c.x}\n`);
   }
+
+  rl.close();
 }
