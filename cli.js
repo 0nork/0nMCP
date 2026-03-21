@@ -76,6 +76,14 @@ async function main() {
     return;
   }
 
+  // ── Install (full onboarding — no login required) ─────────
+
+  if (command === 'install') {
+    const { install } = await import('./install.js');
+    await install();
+    return;
+  }
+
   // ── Auth commands (no login required) ──────────────────────
 
   if (command === 'login') {
@@ -194,7 +202,7 @@ ${c.bright}Links:${c.reset}
 
   // ── Auth Gate ──────────────────────────────────────────────
   // All commands below this point require authentication.
-  const AUTH_FREE = ['help', '--help', '-h', 'login', 'logout', 'whoami', 'version', '--version', '-v'];
+  const AUTH_FREE = ['help', '--help', '-h', 'login', 'logout', 'whoami', 'version', '--version', '-v', 'install'];
   if (!AUTH_FREE.includes(command)) {
     try {
       const { isAuthenticated } = await import('./auth.js');
