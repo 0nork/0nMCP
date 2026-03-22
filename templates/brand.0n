@@ -1,0 +1,186 @@
+{
+  "$0n": {
+    "type": "brand",
+    "version": "1.0.0",
+    "name": "My Brand Profile",
+    "description": "Complete brand and contact profile for 0n ecosystem — auto-populates CRM, email templates, social posts, workflows, and all connected services.",
+    "created": "",
+    "updated": ""
+  },
+
+  "identity": {
+    "firstname.0n": "",
+    "lastname.0n": "",
+    "fullname.0n": "",
+    "email.0n": "",
+    "phone.0n": "",
+    "jobtitle.0n": "",
+    "avatar.0n": "",
+    "bio.0n": "",
+    "dateOfBirth": "",
+    "gender": ""
+  },
+
+  "company": {
+    "company.0n": "",
+    "website.0n": "",
+    "industry": "",
+    "employeeCount": "",
+    "annualRevenue": "",
+    "founded": "",
+    "taxId": "",
+    "description": ""
+  },
+
+  "location": {
+    "address.0n": "",
+    "addressLine2": "",
+    "city.0n": "",
+    "state.0n": "",
+    "zip.0n": "",
+    "country.0n": "",
+    "timezone.0n": ""
+  },
+
+  "social": {
+    "linkedin_url.0n": "",
+    "twitter_handle.0n": "",
+    "facebookUrl": "",
+    "instagramHandle": "",
+    "tiktokHandle": "",
+    "youtubeUrl": "",
+    "githubUsername": "",
+    "googleBusinessUrl": ""
+  },
+
+  "brand": {
+    "brandName": "",
+    "tagline": "",
+    "primaryColor": "",
+    "secondaryColor": "",
+    "accentColor": "",
+    "logoUrl": "",
+    "logoIconUrl": "",
+    "faviconUrl": "",
+    "fontDisplay": "",
+    "fontBody": "",
+    "fontMono": "",
+    "brandVoice": "",
+    "toneOfVoice": "",
+    "targetAudience": "",
+    "uniqueValueProp": "",
+    "missionStatement": "",
+    "keywords": []
+  },
+
+  "communication": {
+    "preferredLanguage": "en",
+    "fromName": "",
+    "fromEmail": "",
+    "replyToEmail": "",
+    "emailSignatureHtml": "",
+    "smsSignature": "",
+    "emailFooter": "",
+    "unsubscribeText": "You received this because you're subscribed. Unsubscribe anytime.",
+    "physicalAddress": ""
+  },
+
+  "crm": {
+    "source.0n": "0n-console",
+    "tags.0n": [],
+    "status.0n": "",
+    "pipelineId": "",
+    "stageId": "",
+    "assignedTo": "",
+    "dnd": false,
+    "dndSettings": {
+      "email": false,
+      "sms": false,
+      "calls": false,
+      "whatsapp": false,
+      "gmb": false,
+      "facebook": false
+    },
+    "customFields": {}
+  },
+
+  "billing": {
+    "currency.0n": "USD",
+    "stripeCustomerId": "",
+    "defaultPaymentMethod": "",
+    "billingEmail": "",
+    "billingAddress": "",
+    "taxExempt": false
+  },
+
+  "social_posting": {
+    "defaultPlatforms": ["linkedin"],
+    "postingSchedule": "weekly",
+    "hashtagStrategy": "minimal",
+    "maxHashtags": 3,
+    "postStyle": "professional",
+    "bannedPhrases": [
+      "game-changer", "synergy", "disrupting", "leverage",
+      "circle back", "move the needle", "deep dive"
+    ],
+    "archetype": {
+      "tier": "",
+      "domain": "",
+      "style": "",
+      "postingBehavior": "",
+      "vocabularyLevel": ""
+    }
+  },
+
+  "email_templates": {
+    "welcomeSubject": "Welcome to {{company.0n}}!",
+    "welcomeBody": "Hi {{firstname.0n}}, thanks for joining {{company.0n}}.",
+    "followUpSubject": "Quick follow-up from {{fullname.0n}}",
+    "followUpBody": "",
+    "appointmentReminderSubject": "Your appointment is coming up",
+    "appointmentReminderBody": ""
+  },
+
+  "seo": {
+    "primaryKeywords": [],
+    "secondaryKeywords": [],
+    "metaTitleTemplate": "{{page_title}} | {{company.0n}}",
+    "metaDescriptionTemplate": "",
+    "ogImageUrl": "",
+    "structuredDataType": "Organization",
+    "googleAnalyticsId": "",
+    "googleTagManagerId": "",
+    "googleSearchConsoleVerification": ""
+  },
+
+  "integrations": {
+    "crmLocationId": "",
+    "crmContactId": "",
+    "stripeAccountId": "",
+    "supabaseProjectId": "",
+    "vercelProjectId": "",
+    "githubRepo": "",
+    "slackChannelId": "",
+    "discordServerId": "",
+    "googleCalendarId": "",
+    "notionDatabaseId": ""
+  },
+
+  "preferences": {
+    "notifications": {
+      "email": true,
+      "sms": false,
+      "push": true,
+      "slack": false
+    },
+    "autoRespond": false,
+    "autoPostSocial": false,
+    "autoEnrollWorkflows": true,
+    "defaultWorkflowExecution": "pipeline",
+    "aiPersonality": "professional",
+    "aiTone": "direct",
+    "measurementSystem": "imperial",
+    "dateFormat": "MM/DD/YYYY",
+    "timeFormat": "12h"
+  }
+}
