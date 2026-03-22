@@ -155,36 +155,8 @@ export default [
 
   // ── Associations ────────────────────────────────────────────
 
-  {
-    name: "crm_list_associations",
-    description: "List all association definitions for a custom object schema in a CRM location.",
-    method: "GET",
-    path: "/associations/",
-    params: {
-      locationId: { type: "string", description: "Location / sub-account ID", required: true, in: "query" },
-      schemaKey: { type: "string", description: "Custom object schema key to list associations for", required: true, in: "query" },
-    },
-    query: ["locationId", "schemaKey"],
-    body: [],
-  },
-
-  {
-    name: "crm_create_association",
-    description: "Create a new association definition between two custom object schemas.",
-    method: "POST",
-    path: "/associations/",
-    params: {
-      locationId: { type: "string", description: "Location / sub-account ID", required: true, in: "body" },
-      name: { type: "string", description: "Display name for the association", required: true, in: "body" },
-      key: { type: "string", description: "Unique key for the association (lowercase, no spaces)", required: true, in: "body" },
-      fromSchemaKey: { type: "string", description: "Schema key of the source object", required: true, in: "body" },
-      toSchemaKey: { type: "string", description: "Schema key of the target object", required: true, in: "body" },
-      fromDisplayField: { type: "string", description: "Field key shown when viewing from the source side", required: false, in: "body" },
-      toDisplayField: { type: "string", description: "Field key shown when viewing from the target side", required: false, in: "body" },
-    },
-    query: [],
-    body: ["locationId", "name", "key", "fromSchemaKey", "toSchemaKey", "fromDisplayField", "toDisplayField"],
-  },
+  // crm_list_associations — defined in funnels.js
+  // crm_create_association — defined in funnels.js
 
   // ── Email Builder ───────────────────────────────────────────
 
@@ -310,45 +282,9 @@ export default [
 
   // ── Snapshots ───────────────────────────────────────────────
 
-  {
-    name: "crm_list_snapshots",
-    description: "List all snapshots available for a CRM company.",
-    method: "GET",
-    path: "/snapshots/",
-    params: {
-      companyId: { type: "string", description: "Company / agency ID", required: true, in: "query" },
-    },
-    query: ["companyId"],
-    body: [],
-  },
-
-  {
-    name: "crm_create_snapshot_share_link",
-    description: "Create a shareable link for a snapshot so it can be pushed to other locations.",
-    method: "POST",
-    path: "/snapshots/share/link",
-    params: {
-      companyId: { type: "string", description: "Company / agency ID", required: true, in: "body" },
-      snapshotId: { type: "string", description: "Snapshot ID to share", required: true, in: "body" },
-      shareType: { type: "string", description: "Type of share (e.g. link, permanent)", required: true, in: "body" },
-      relationshipNumber: { type: "string", description: "Relationship number for the share link", required: false, in: "body" },
-    },
-    query: [],
-    body: ["companyId", "snapshotId", "shareType", "relationshipNumber"],
-  },
-
-  {
-    name: "crm_get_snapshot_push_status",
-    description: "Get the push status between a snapshot and a specific location.",
-    method: "GET",
-    path: "/snapshots/snapshot-status/:snapshotId/:locationId",
-    params: {
-      snapshotId: { type: "string", description: "Snapshot ID to check", required: true, in: "path" },
-      locationId: { type: "string", description: "Location / sub-account ID to check status against", required: true, in: "path" },
-    },
-    query: [],
-    body: [],
-  },
+  // crm_list_snapshots — defined in funnels.js
+  // crm_create_snapshot_share_link — defined in funnels.js
+  // crm_get_snapshot_push_status — defined in funnels.js
 
   // ── Trigger Links ───────────────────────────────────────────
 

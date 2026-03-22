@@ -105,20 +105,7 @@ const users = [
 
   // ── FORMS ─────────────────────────────────────────────────
 
-  {
-    name: "crm_list_forms",
-    description: "List all forms for a CRM location with optional pagination and type filter.",
-    method: "GET",
-    path: "/forms/",
-    params: {
-      locationId: { type: "string", description: "Location / sub-account ID", required: true, in: "query" },
-      skip: { type: "number", description: "Number of records to skip for pagination", required: false, in: "query" },
-      limit: { type: "number", description: "Maximum number of forms to return", required: false, in: "query" },
-      type: { type: "string", description: "Filter by form type", required: false, in: "query" },
-    },
-    query: ["locationId", "skip", "limit", "type"],
-    body: [],
-  },
+  // crm_list_forms — defined in funnels.js
 
   {
     name: "crm_get_form_submissions",
@@ -154,20 +141,7 @@ const users = [
 
   // ── SURVEYS ───────────────────────────────────────────────
 
-  {
-    name: "crm_list_surveys",
-    description: "List all surveys for a CRM location with optional pagination and type filter.",
-    method: "GET",
-    path: "/surveys/",
-    params: {
-      locationId: { type: "string", description: "Location / sub-account ID", required: true, in: "query" },
-      skip: { type: "number", description: "Number of records to skip for pagination", required: false, in: "query" },
-      limit: { type: "number", description: "Maximum number of surveys to return", required: false, in: "query" },
-      type: { type: "string", description: "Filter by survey type", required: false, in: "query" },
-    },
-    query: ["locationId", "skip", "limit", "type"],
-    body: [],
-  },
+  // crm_list_surveys — defined in funnels.js
 
   {
     name: "crm_get_survey_submissions",
@@ -187,60 +161,11 @@ const users = [
     body: [],
   },
 
-  // ── FUNNELS / WEBSITES ────────────────────────────────────
+  // ── FUNNELS / WEBSITES (defined in funnels.js) ────────────
+  // crm_list_funnels, crm_get_funnel_pages, crm_count_funnel_pages → see funnels.js
 
   {
-    name: "crm_list_funnels",
-    description: "List funnels and websites for a CRM location with optional filters for type, name, category, and parent.",
-    method: "GET",
-    path: "/funnels/funnel/list",
-    params: {
-      locationId: { type: "string", description: "Location / sub-account ID", required: true, in: "query" },
-      limit: { type: "number", description: "Maximum number of funnels to return", required: false, in: "query" },
-      offset: { type: "number", description: "Number of records to skip for pagination", required: false, in: "query" },
-      type: { type: "string", description: "Filter by funnel type", required: false, in: "query" },
-      name: { type: "string", description: "Filter by exact funnel name", required: false, in: "query" },
-      search: { type: "string", description: "Free-text search across funnel names", required: false, in: "query" },
-      category: { type: "string", description: "Filter by funnel category", required: false, in: "query" },
-      parentId: { type: "string", description: "Filter by parent funnel ID", required: false, in: "query" },
-    },
-    query: ["locationId", "limit", "offset", "type", "name", "search", "category", "parentId"],
-    body: [],
-  },
-
-  {
-    name: "crm_get_funnel_pages",
-    description: "List pages within a funnel with optional filters for name and search.",
-    method: "GET",
-    path: "/funnels/page",
-    params: {
-      locationId: { type: "string", description: "Location / sub-account ID", required: true, in: "query" },
-      funnelId: { type: "string", description: "Funnel ID to list pages for", required: true, in: "query" },
-      limit: { type: "number", description: "Maximum number of pages to return", required: false, in: "query" },
-      offset: { type: "number", description: "Number of records to skip for pagination", required: false, in: "query" },
-      name: { type: "string", description: "Filter by exact page name", required: false, in: "query" },
-      search: { type: "string", description: "Free-text search across page names", required: false, in: "query" },
-    },
-    query: ["locationId", "funnelId", "limit", "offset", "name", "search"],
-    body: [],
-  },
-
-  {
-    name: "crm_count_funnel_pages",
-    description: "Get the total count of pages within a funnel, optionally filtered by name.",
-    method: "GET",
-    path: "/funnels/page/count",
-    params: {
-      locationId: { type: "string", description: "Location / sub-account ID", required: true, in: "query" },
-      funnelId: { type: "string", description: "Funnel ID to count pages for", required: true, in: "query" },
-      name: { type: "string", description: "Filter count by page name", required: false, in: "query" },
-    },
-    query: ["locationId", "funnelId", "name"],
-    body: [],
-  },
-
-  {
-    name: "crm_funnel_redirect_lookup",
+    name: "crm_funnel_redirect_lookup_by_id",
     description: "Look up a funnel redirect by its redirect ID.",
     method: "GET",
     path: "/funnels/lookup/redirect",
