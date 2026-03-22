@@ -46,6 +46,7 @@ export { PluginRegistry, getPluginRegistry } from "./plugin-registry.js";
 
 // ── 0nAI Training Center ────────────────────────────────────
 export { registerTrainingTools } from "./training.js";
+export { TrainingFeedEngine, registerFeedTools, FEED_SOURCES } from "./training-feed.js";
 
 // ── Imports for tool handlers ──────────────────────────────
 import { parseFile } from "./parser.js";
