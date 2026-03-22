@@ -3,9 +3,9 @@
 // ============================================================
 // The .0n Conversion Engine — import credentials, verify keys,
 // generate platform configs, create portable AI Brain bundles,
-// and build/run application bundles.
+// build/run application bundles, and the 0nEngine Plugin System.
 //
-// 11 MCP Tools:
+// 16 MCP Tools:
 //   engine_import    — Import credentials from .env/CSV/JSON
 //   engine_verify    — Verify API keys with test calls
 //   engine_platforms — Generate platform configs
@@ -17,6 +17,11 @@
 //   app_inspect      — Show application metadata (no passphrase)
 //   app_validate     — Validate application cross-references
 //   app_list         — List installed applications
+//   plugin_list      — List all plugins (catalog + custom)
+//   plugin_build     — Build a plugin from service key or spec
+//   plugin_execute   — Execute a plugin endpoint with .0n fields
+//   plugin_inspect   — Inspect a plugin's capabilities & endpoints
+//   plugin_create    — Generate a new custom plugin spec
 //
 // Patent Pending: US Provisional Patent Application #63/968,814
 // ============================================================
@@ -34,6 +39,14 @@ export { Application } from "./application.js";
 export { createApplication, openApplication, inspectApplication, validateApplication } from "./app-builder.js";
 export { ApplicationServer } from "./app-server.js";
 
+// ── 0nEngine Plugin System ──────────────────────────────────
+export { Plugin } from "./plugin.js";
+export { PluginBuilder, getPluginBuilder, buildPlugin, buildAllPlugins, buildFromSpec, generatePluginSpec } from "./plugin-builder.js";
+export { PluginRegistry, getPluginRegistry } from "./plugin-registry.js";
+
+// ── 0nAI Training Center ────────────────────────────────────
+export { registerTrainingTools } from "./training.js";
+
 // ── Imports for tool handlers ──────────────────────────────
 import { parseFile } from "./parser.js";
 import { mapEnvVars, groupByService, validateMapping } from "./mapper.js";
@@ -41,6 +54,8 @@ import { verifyCredentials, verifyAll } from "./validator.js";
 import { generatePlatformConfig, generateAllPlatformConfigs, getPlatformInfo, listPlatforms } from "./platforms.js";
 import { createBundle, openBundle, inspectBundle, verifyBundle } from "./bundler.js";
 import { createApplication, openApplication, inspectApplication, validateApplication } from "./app-builder.js";
+import { PluginBuilder, getPluginBuilder } from "./plugin-builder.js";
+import { PluginRegistry, getPluginRegistry } from "./plugin-registry.js";
 import { existsSync, readFileSync, readdirSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
@@ -634,6 +649,323 @@ Example: app_list({})`,
               message: apps.length > 0
                 ? `Found ${apps.length} application(s). Run with: 0nmcp app run <file>`
                 : "No applications installed.",
+            }, null, 2),
+          }],
+        };
+      } catch (err) {
+        return { content: [{ type: "text", text: JSON.stringify({ status: "failed", error: err.message }, null, 2) }] };
+      }
+    }
+  );
+
+  // ═══════════════════════════════════════════════════════════
+  // 0nEngine Plugin Tools
+  // ═══════════════════════════════════════════════════════════
+
+  // ─── plugin_list ───────────────────────────────────────────
+  server.tool(
+    "plugin_list",
+    `List all available plugins — catalog services + custom plugins from ~/.0n/plugins/.
+Shows connection status, endpoint counts, capability counts, and field coverage.
+
+Example: plugin_list({})
+Example: plugin_list({ type: "email" })
+Example: plugin_list({ connected: true })`,
+    {
+      type: z.string().optional().describe("Filter by service type (email, payments, crm, etc.)"),
+      connected: z.boolean().optional().describe("Filter by connection status"),
+      search: z.string().optional().describe("Search by keyword in name/description"),
+    },
+    async ({ type, connected, search }) => {
+      try {
+        const registry = getPluginRegistry();
+
+        let plugins = registry.all();
+
+        if (type) plugins = plugins.filter(p => p.type === type);
+        if (connected !== undefined) plugins = plugins.filter(p => p.isConnected === connected);
+        if (search) {
+          const q = search.toLowerCase();
+          plugins = plugins.filter(p =>
+            p.name.toLowerCase().includes(q) ||
+            p.description.toLowerCase().includes(q) ||
+            p.key.toLowerCase().includes(q)
+          );
+        }
+
+        const list = plugins.map(p => ({
+          key: p.key,
+          name: p.name,
+          type: p.type,
+          connected: p.isConnected,
+          endpoints: Object.keys(p.endpoints).length,
+          capabilities: p.capabilities.length,
+        }));
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              status: "ok",
+              total: list.length,
+              plugins: list,
+              types: [...new Set(plugins.map(p => p.type))],
+            }, null, 2),
+          }],
+        };
+      } catch (err) {
+        return { content: [{ type: "text", text: JSON.stringify({ status: "failed", error: err.message }, null, 2) }] };
+      }
+    }
+  );
+
+  // ─── plugin_inspect ────────────────────────────────────────
+  server.tool(
+    "plugin_inspect",
+    `Inspect a plugin's full details — capabilities, endpoints, field mappings, and stats.
+
+Example: plugin_inspect({ service: "stripe" })`,
+    {
+      service: z.string().describe("Service key to inspect (e.g., stripe, crm, sendgrid)"),
+    },
+    async ({ service }) => {
+      try {
+        const builder = getPluginBuilder();
+        const plugin = builder.build(service);
+
+        const info = plugin.inspect();
+        const fields = builder.getServiceFields(service);
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              status: "ok",
+              ...info,
+              fieldMappings: fields,
+              fieldCount: Object.keys(fields).length,
+            }, null, 2),
+          }],
+        };
+      } catch (err) {
+        return { content: [{ type: "text", text: JSON.stringify({ status: "failed", error: err.message }, null, 2) }] };
+      }
+    }
+  );
+
+  // ─── plugin_execute ────────────────────────────────────────
+  server.tool(
+    "plugin_execute",
+    `Execute a plugin endpoint with automatic .0n field resolution.
+Accepts canonical .0n fields (email.0n, fullname.0n, etc.) and auto-translates
+to the service's native format. Handles auth, rate limiting, and response normalization.
+
+Example: plugin_execute({
+  service: "stripe",
+  endpoint: "create_customer",
+  params: { "email.0n": "mike@rocketopp.com", "fullname.0n": "Mike Mento" }
+})`,
+    {
+      service: z.string().describe("Service key (e.g., stripe, crm, sendgrid)"),
+      endpoint: z.string().describe("Endpoint name from the service catalog (e.g., create_customer, send_email)"),
+      params: z.record(z.any()).optional().describe("Parameters — supports .0n canonical fields (email.0n) and raw service fields"),
+      credentials: z.record(z.string()).optional().describe("One-time credentials override (otherwise uses ~/.0n/connections/)"),
+    },
+    async ({ service, endpoint, params, credentials }) => {
+      try {
+        const builder = getPluginBuilder();
+        const plugin = builder.build(service);
+
+        // Connect with provided or disk credentials
+        if (credentials) {
+          plugin.connect(credentials);
+        } else {
+          // Try to load from disk
+          const connFile = join(CONNECTIONS_DIR, `${service}.0n`);
+          const connFileJson = join(CONNECTIONS_DIR, `${service}.0n.json`);
+          const connPath = existsSync(connFile) ? connFile : existsSync(connFileJson) ? connFileJson : null;
+
+          if (connPath) {
+            const data = JSON.parse(readFileSync(connPath, "utf-8"));
+            if (data.auth?.credentials) {
+              plugin.connect(data.auth.credentials);
+            }
+          }
+        }
+
+        if (!plugin.isConnected) {
+          return {
+            content: [{
+              type: "text",
+              text: JSON.stringify({
+                status: "not_connected",
+                service,
+                message: `Plugin "${service}" has no credentials. Provide credentials or connect via connect_service.`,
+                requiredKeys: plugin.credentialKeys,
+              }, null, 2),
+            }],
+          };
+        }
+
+        const result = await plugin.execute(endpoint, params || {});
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify(result, null, 2),
+          }],
+        };
+      } catch (err) {
+        return { content: [{ type: "text", text: JSON.stringify({ status: "failed", error: err.message }, null, 2) }] };
+      }
+    }
+  );
+
+  // ─── plugin_build ──────────────────────────────────────────
+  server.tool(
+    "plugin_build",
+    `Build a plugin from a service key or custom spec.
+If building from catalog, returns the plugin's full tool manifest.
+If building from spec, creates a custom plugin and saves to ~/.0n/plugins/.
+
+Example (catalog): plugin_build({ service: "stripe" })
+Example (custom): plugin_build({
+  spec: {
+    service: "acme",
+    name: "Acme CRM",
+    baseUrl: "https://api.acme.com/v1",
+    authType: "api_key",
+    credentialKeys: ["apiKey"],
+    endpoints: {
+      list_contacts: { method: "GET", path: "/contacts" },
+      create_contact: { method: "POST", path: "/contacts", body: { email: "", name: "" } }
+    }
+  }
+})`,
+    {
+      service: z.string().optional().describe("Catalog service key (e.g., stripe) — builds from catalog"),
+      spec: z.record(z.any()).optional().describe("Custom plugin spec — builds from definition"),
+      save: z.boolean().optional().describe("Save custom plugin to ~/.0n/plugins/ (default: true)"),
+    },
+    async ({ service, spec, save }) => {
+      try {
+        const builder = getPluginBuilder();
+
+        if (spec) {
+          // Build from custom spec
+          const generated = builder.generate(spec);
+          const plugin = builder.buildFromSpec(generated);
+
+          if (save !== false) {
+            builder.generateAndSave(spec);
+          }
+
+          return {
+            content: [{
+              type: "text",
+              text: JSON.stringify({
+                status: "built",
+                source: "custom_spec",
+                plugin: plugin.inspect(),
+                tools: plugin.toMcpTools().map(t => t.name),
+                spec: generated,
+                saved: save !== false,
+                message: `Custom plugin "${spec.service || spec.key}" built with ${Object.keys(spec.endpoints || {}).length} endpoints.`,
+              }, null, 2),
+            }],
+          };
+        }
+
+        if (service) {
+          // Build from catalog
+          const plugin = builder.build(service);
+          const tools = plugin.toMcpTools();
+
+          return {
+            content: [{
+              type: "text",
+              text: JSON.stringify({
+                status: "built",
+                source: "catalog",
+                plugin: plugin.inspect(),
+                tools: tools.map(t => t.name),
+                toolCount: tools.length,
+                message: `Plugin "${service}" built from catalog with ${tools.length} tools.`,
+              }, null, 2),
+            }],
+          };
+        }
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              status: "failed",
+              error: "Provide either 'service' (catalog key) or 'spec' (custom definition).",
+            }, null, 2),
+          }],
+        };
+      } catch (err) {
+        return { content: [{ type: "text", text: JSON.stringify({ status: "failed", error: err.message }, null, 2) }] };
+      }
+    }
+  );
+
+  // ─── plugin_create ─────────────────────────────────────────
+  server.tool(
+    "plugin_create",
+    `Generate a new custom plugin spec for a service not in the catalog.
+Auto-infers capabilities from endpoints and maps .0n canonical fields.
+Saves to ~/.0n/plugins/ for automatic loading.
+
+Example: plugin_create({
+  key: "acme",
+  name: "Acme API",
+  baseUrl: "https://api.acme.com/v1",
+  authType: "api_key",
+  credentialKeys: ["apiKey"],
+  endpoints: {
+    list_users: { method: "GET", path: "/users" },
+    create_user: { method: "POST", path: "/users", body: { email: "", name: "" } },
+    get_user: { method: "GET", path: "/users/{userId}" },
+    update_user: { method: "PUT", path: "/users/{userId}", body: {} },
+    delete_user: { method: "DELETE", path: "/users/{userId}" }
+  }
+})`,
+    {
+      key: z.string().describe("Service key (lowercase, no spaces)"),
+      name: z.string().optional().describe("Display name"),
+      baseUrl: z.string().describe("API base URL"),
+      authType: z.enum(["api_key", "oauth", "basic", "none"]).optional().describe("Auth type (default: api_key)"),
+      credentialKeys: z.array(z.string()).optional().describe("Required credential keys (default: ['apiKey'])"),
+      type: z.string().optional().describe("Category type (e.g., crm, email, payments)"),
+      description: z.string().optional().describe("Service description"),
+      endpoints: z.record(z.any()).describe("Endpoint definitions { name: { method, path, body?, query? } }"),
+      fieldMappings: z.record(z.any()).optional().describe("Custom .0n field mappings { 'email.0n': 'user_email' }"),
+    },
+    async ({ key, name, baseUrl, authType, credentialKeys, type, description, endpoints, fieldMappings }) => {
+      try {
+        const builder = getPluginBuilder();
+
+        const def = { key, name, baseUrl, authType, credentialKeys, type, description, endpoints, fieldMappings };
+        const { spec, path } = builder.generateAndSave(def);
+
+        // Also register in the active registry
+        const registry = getPluginRegistry();
+        const plugin = registry.registerFromSpec(spec);
+
+        return {
+          content: [{
+            type: "text",
+            text: JSON.stringify({
+              status: "created",
+              service: key,
+              path,
+              endpoints: Object.keys(endpoints).length,
+              capabilities: spec.capabilities?.length || 0,
+              fieldMappings: spec.fieldMappings ? Object.keys(spec.fieldMappings).length : 0,
+              tools: plugin.toMcpTools().map(t => t.name),
+              message: `Plugin "${key}" created and saved to ${path}. It's now available in the registry.`,
             }, null, 2),
           }],
         };

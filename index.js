@@ -31,7 +31,7 @@ import { registerVaultTools, autoUnseal } from "./vault/index.js";
 import { registerContainerTools } from "./vault/tools-container.js";
 import { registerDeedTools } from "./vault/tools-deed.js";
 import { unsealedCache } from "./vault/cache.js";
-import { registerEngineTools } from "./engine/index.js";
+import { registerEngineTools, registerTrainingTools } from "./engine/index.js";
 import { CapabilityProxy } from "./capability-proxy.js";
 import { SERVICE_CATALOG } from "./catalog.js";
 
@@ -77,6 +77,12 @@ if (vaultResult.unsealed.length > 0) {
 // ============================================================
 
 registerEngineTools(server, z);
+
+// ============================================================
+// 0nAI TRAINING CENTER
+// ============================================================
+
+registerTrainingTools(server, z);
 
 // ============================================================
 // VAULT CONTAINER TOOLS (patent-pending 0nVault containers)
