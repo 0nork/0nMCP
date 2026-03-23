@@ -48,6 +48,9 @@ export { PluginRegistry, getPluginRegistry } from "./plugin-registry.js";
 export { registerTrainingTools } from "./training.js";
 export { TrainingFeedEngine, registerFeedTools, FEED_SOURCES } from "./training-feed.js";
 
+// ── Multi-AI Council ────────────────────────────────────────
+export { registerCouncilTools, getAvailableProviders, askAll, PROVIDERS } from "./multi-ai.js";
+
 // ── Imports for tool handlers ──────────────────────────────
 import { parseFile } from "./parser.js";
 import { mapEnvVars, groupByService, validateMapping } from "./mapper.js";
