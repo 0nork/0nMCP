@@ -379,6 +379,14 @@ Give the final synthesized answer.`;
         const synthesizer = successResponses[0];
         const synthesis = await askProvider(synthesizer.provider, synthesisPrompt, 'You are Jaxx, a master AI synthesizer. Combine multiple perspectives into one optimal answer.');
 
+        // Auto-save to 0nAI training pipeline
+        const trainingResult = await saveToTraining(
+          prompt,
+          askResult.responses,
+          synthesis.response,
+          debateResults
+        );
+
         return {
           content: [{
             type: "text",
@@ -396,6 +404,7 @@ Give the final synthesized answer.`;
                 responses_received: successResponses.length,
                 debate_rounds: debateResults.length,
               },
+              training: trainingResult,
             }, null, 2),
           }],
         };
@@ -434,4 +443,83 @@ Example: council_config({})`,
   );
 }
 
-export { getAvailableProviders, askProvider, askAll, debate, PROVIDERS };
+// ── Training Pipeline Integration ────────────────────────────
+// Every council session auto-generates training pairs for 0nAI.
+// The synthesis becomes the "ideal" answer, scored by agreement level.
+
+async function saveToTraining(prompt, responses, synthesis, debateResults) {
+  try {
+    const { createClient } = await import("@supabase/supabase-js");
+    const url = process.env.SUPABASE_URL || "https://pwujhhmlrtxjmjzyttwn.supabase.co";
+    const key = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+    if (!key) return { saved: false, reason: "No Supabase key" };
+
+    const sb = createClient(url, key);
+
+    // Calculate quality score from agreement level
+    const successful = responses.filter(r => !r.error && r.response);
+    if (successful.length < 2 || !synthesis) return { saved: false, reason: "Not enough responses" };
+
+    // Agreement score: how many AIs gave similar answers (rough heuristic)
+    const words = new Set();
+    successful.forEach(r => {
+      (r.response || "").toLowerCase().split(/\s+/).filter(w => w.length > 4).forEach(w => words.add(w));
+    });
+
+    const totalUniqueWords = words.size;
+    const sharedWords = [...words].filter(w =>
+      successful.every(r => (r.response || "").toLowerCase().includes(w))
+    ).length;
+
+    const agreementScore = totalUniqueWords > 0
+      ? Math.min(1.0, Math.max(0.3, 0.5 + (sharedWords / totalUniqueWords) * 0.5))
+      : 0.5;
+
+    // Save the synthesis as a training pair
+    const { data, error } = await sb.from("training_pairs").insert({
+      user_input: prompt,
+      assistant_output: synthesis,
+      system_prompt: null,
+      domain: "council",
+      difficulty: "medium",
+      quality_score: Math.round(agreementScore * 100) / 100,
+      human_reviewed: false,
+      approved: false,
+      tags: ["council-generated", "multi-ai"],
+      metadata: {
+        source: "multi-ai-council",
+        providers: successful.map(r => r.provider),
+        provider_count: successful.length,
+        agreement_score: agreementScore,
+        debate_rounds: debateResults?.length || 0,
+        generated_at: new Date().toISOString(),
+      },
+    }).select("id").single();
+
+    if (error) return { saved: false, reason: error.message };
+
+    // Also save each individual response as a training source
+    for (const r of successful) {
+      await sb.from("training_sources").insert({
+        source_type: "council",
+        title: `Council: ${r.name} on "${prompt.slice(0, 80)}"`,
+        content: r.response.slice(0, 5000),
+        token_count: Math.ceil(r.response.length / 4),
+        tags: ["council", r.provider],
+        status: "raw",
+        metadata: {
+          provider: r.provider,
+          name: r.name,
+          duration_ms: r.durationMs,
+          prompt: prompt.slice(0, 500),
+        },
+      }).catch(() => {}); // non-critical
+    }
+
+    return { saved: true, pair_id: data?.id, quality_score: agreementScore };
+  } catch (err) {
+    return { saved: false, reason: err.message };
+  }
+}
+
+export { getAvailableProviders, askProvider, askAll, debate, saveToTraining, PROVIDERS };
