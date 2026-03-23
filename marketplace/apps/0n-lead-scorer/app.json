@@ -1,0 +1,75 @@
+{
+  "name": "0n Lead Scorer",
+  "slug": "0n-lead-scorer",
+  "description": "AI-powered lead scoring for CRM contacts. Automatically analyzes contact data — email domain, company, title, source, engagement — and assigns a 0-100 quality score. High-score leads get tagged for priority follow-up.",
+  "version": "1.0.0",
+  "author": "RocketOpp LLC",
+  "website": "https://0nmcp.com",
+  "scopes": [
+    "contacts.readonly",
+    "contacts.write",
+    "locations/customFields.readonly",
+    "locations/customFields.write",
+    "locations/tags.readonly",
+    "locations/tags.write"
+  ],
+  "webhook_url": "https://0nmcp.com/api/marketplace/webhooks/0n-lead-scorer",
+  "webhook_events": [
+    "ContactCreate",
+    "ContactUpdate"
+  ],
+  "oauth": {
+    "redirect_uri": "https://0nmcp.com/api/marketplace/oauth/callback",
+    "auth_url": "https://marketplace.leadconnectorhq.com/oauth/chooselocation"
+  },
+  "pricing": {
+    "type": "subscription",
+    "monthly": 49,
+    "trial_days": 14
+  },
+  "custom_fields": [
+    {
+      "name": "0n Lead Score",
+      "type": "NUMERICAL",
+      "model": "contact"
+    },
+    {
+      "name": "0n Score Reason",
+      "type": "TEXT",
+      "model": "contact"
+    },
+    {
+      "name": "0n Scored At",
+      "type": "TEXT",
+      "model": "contact"
+    }
+  ],
+  "tags": [
+    "0n-hot-lead",
+    "0n-warm-lead",
+    "0n-cold-lead",
+    "0n-scored"
+  ],
+  "config_schema": {
+    "hot_threshold": {
+      "type": "number",
+      "default": 75,
+      "description": "Score threshold for hot lead tag (0-100)"
+    },
+    "warm_threshold": {
+      "type": "number",
+      "default": 40,
+      "description": "Score threshold for warm lead tag (0-100)"
+    },
+    "score_on_update": {
+      "type": "boolean",
+      "default": false,
+      "description": "Re-score contacts on every update (vs. only on create)"
+    },
+    "industry_keywords": {
+      "type": "array",
+      "default": [],
+      "description": "Industry-specific keywords that boost lead score"
+    }
+  }
+}

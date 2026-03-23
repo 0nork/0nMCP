@@ -1,0 +1,64 @@
+{
+  "name": "0n AutoResponder",
+  "slug": "0n-autoresponder",
+  "description": "AI-powered auto-responses for CRM conversations using 0nMCP. Automatically replies to inbound messages with intelligent, context-aware responses powered by Claude.",
+  "version": "1.0.0",
+  "author": "RocketOpp LLC",
+  "website": "https://0nmcp.com",
+  "scopes": [
+    "conversations.readonly",
+    "conversations.write",
+    "conversations/message.readonly",
+    "conversations/message.write",
+    "contacts.readonly"
+  ],
+  "webhook_url": "https://0nmcp.com/api/marketplace/webhooks/0n-autoresponder",
+  "webhook_events": [
+    "ConversationMessage"
+  ],
+  "oauth": {
+    "redirect_uri": "https://0nmcp.com/api/marketplace/oauth/callback",
+    "auth_url": "https://marketplace.leadconnectorhq.com/oauth/chooselocation"
+  },
+  "pricing": {
+    "type": "subscription",
+    "monthly": 29,
+    "trial_days": 14
+  },
+  "config_schema": {
+    "reply_delay_seconds": {
+      "type": "number",
+      "default": 30,
+      "description": "Seconds to wait before sending auto-reply"
+    },
+    "business_hours_only": {
+      "type": "boolean",
+      "default": true,
+      "description": "Only auto-reply during business hours"
+    },
+    "business_hours_start": {
+      "type": "string",
+      "default": "09:00",
+      "description": "Business hours start (HH:MM, location timezone)"
+    },
+    "business_hours_end": {
+      "type": "string",
+      "default": "17:00",
+      "description": "Business hours end (HH:MM, location timezone)"
+    },
+    "keyword_triggers": {
+      "type": "array",
+      "default": [],
+      "description": "Only auto-reply when message contains one of these keywords (empty = reply to all)"
+    },
+    "system_prompt": {
+      "type": "string",
+      "default": "You are a helpful business assistant. Answer questions concisely and professionally. If you cannot help, let the customer know a team member will follow up shortly.",
+      "description": "System prompt for the AI responder"
+    }
+  },
+  "tags": [
+    "0n-autoresponder-active",
+    "0n-autoresponder-replied"
+  ]
+}

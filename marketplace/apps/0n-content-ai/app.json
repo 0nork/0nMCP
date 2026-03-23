@@ -1,0 +1,61 @@
+{
+  "name": "0n Content AI",
+  "slug": "0n-content-ai",
+  "description": "AI-powered content generation for CRM users. Generate blog posts, email templates, social media posts, and marketing copy — all within your CRM. Triggered via webhook or direct API call.",
+  "version": "1.0.0",
+  "author": "RocketOpp LLC",
+  "website": "https://0nmcp.com",
+  "scopes": [
+    "contacts.readonly",
+    "locations.readonly",
+    "blogs.readonly",
+    "blogs.write",
+    "socialplanner.readonly",
+    "socialplanner.write",
+    "emails.readonly",
+    "emails.write"
+  ],
+  "webhook_url": "https://0nmcp.com/api/marketplace/webhooks/0n-content-ai",
+  "webhook_events": [
+    "CustomWebhook"
+  ],
+  "oauth": {
+    "redirect_uri": "https://0nmcp.com/api/marketplace/oauth/callback",
+    "auth_url": "https://marketplace.leadconnectorhq.com/oauth/chooselocation"
+  },
+  "pricing": {
+    "type": "subscription",
+    "monthly": 39,
+    "trial_days": 14
+  },
+  "config_schema": {
+    "business_name": {
+      "type": "string",
+      "default": "",
+      "description": "Business name for branded content"
+    },
+    "business_description": {
+      "type": "string",
+      "default": "",
+      "description": "Brief description of the business for context"
+    },
+    "tone": {
+      "type": "string",
+      "default": "professional",
+      "description": "Content tone: professional, casual, friendly, authoritative, playful"
+    },
+    "target_audience": {
+      "type": "string",
+      "default": "",
+      "description": "Target audience description for content tailoring"
+    },
+    "max_tokens": {
+      "type": "number",
+      "default": 1000,
+      "description": "Maximum length for generated content"
+    }
+  },
+  "tags": [
+    "0n-content-generated"
+  ]
+}

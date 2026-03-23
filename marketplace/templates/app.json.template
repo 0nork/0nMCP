@@ -1,0 +1,34 @@
+{
+  "name": "0n Your App Name",
+  "slug": "0n-your-app-name",
+  "description": "What your app does — one or two sentences.",
+  "version": "1.0.0",
+  "author": "Your Name or Company",
+  "website": "https://your-website.com",
+  "scopes": [
+    "contacts.readonly",
+    "contacts.write"
+  ],
+  "webhook_url": "https://0nmcp.com/api/marketplace/webhooks/0n-your-app-name",
+  "webhook_events": [
+    "ContactCreate"
+  ],
+  "oauth": {
+    "redirect_uri": "https://0nmcp.com/api/marketplace/oauth/callback",
+    "auth_url": "https://marketplace.leadconnectorhq.com/oauth/chooselocation"
+  },
+  "pricing": {
+    "type": "subscription",
+    "monthly": 29,
+    "trial_days": 14
+  },
+  "custom_fields": [],
+  "tags": [],
+  "config_schema": {
+    "example_setting": {
+      "type": "string",
+      "default": "default_value",
+      "description": "Describe what this setting controls"
+    }
+  }
+}

@@ -1,0 +1,67 @@
+/**
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 0n [Your App Name] — Webhook Handler
+ * ═══════════════════════════════════════════════════════════════════════════
+ * Description of what your handler does.
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
+import { crmRequest } from '../../lib/oauth.js';
+
+/**
+ * Handle an incoming webhook event.
+ *
+ * @param {object} event    — CRM webhook event
+ * @param {object} context  — Execution context
+ * @param {string} context.locationId  — CRM location ID
+ * @param {string} context.accessToken — OAuth access token for this location
+ * @param {object} context.config      — App configuration for this location
+ * @param {Function} context.execute   — 0nMCP tool executor (optional)
+ * @returns {Promise<object>} Handler result
+ */
+export async function handle(event, context) {
+  const { locationId, accessToken, config, execute } = context;
+
+  // 1. Filter events — only process the types you care about
+  if (event.type !== 'ContactCreate') {
+    return { skipped: true, reason: `Event type ${event.type} not handled` };
+  }
+
+  // 2. Extract data from the event
+  const contactId = event.data?.contactId || event.data?.id;
+  if (!contactId) {
+    return { skipped: true, reason: 'No contactId in event' };
+  }
+
+  // 3. Fetch additional data from CRM if needed
+  let contact;
+  try {
+    const result = await crmRequest(`/contacts/${contactId}`, accessToken);
+    contact = result.contact || result;
+  } catch (err) {
+    return { success: false, error: `Failed to fetch contact: ${err.message}` };
+  }
+
+  // 4. Process the data (your logic here)
+  // Example: Use AI via 0nMCP
+  // if (execute) {
+  //   const aiResult = await execute('anthropic_messages_create', {
+  //     model: 'claude-sonnet-4-20250514',
+  //     max_tokens: 500,
+  //     messages: [{ role: 'user', content: 'Your prompt here' }],
+  //   });
+  // }
+
+  // 5. Update CRM data if needed
+  // await crmRequest(`/contacts/${contactId}`, accessToken, {
+  //   method: 'PUT',
+  //   body: { tags: ['your-tag'] },
+  // });
+
+  // 6. Return result
+  return {
+    success: true,
+    contactId,
+    message: 'Processed successfully',
+  };
+}
