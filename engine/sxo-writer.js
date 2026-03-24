@@ -321,32 +321,88 @@ Follow the SXO Writing Protocol exactly. Return valid JSON.`;
           });
         }
 
-        // Post to Dev.to if requested
+        // ── RADIAL BURST ─────────────────────────────────────────
+        // Origin: 0nmcp.com/blog (canonical source)
+        // Then blast to every connected outlet
+        const burst = { origin: false, devto: false, linkedin: false, reddit: false };
+        const canonicalUrl = `https://www.0nmcp.com/blog/${result.slug}`;
+
+        // Convert HTML to Markdown for external platforms
+        const markdown = result.content
+          .replace(/<h1[^>]*>(.*?)<\/h1>/gs, '# $1\n\n')
+          .replace(/<h2[^>]*>(.*?)<\/h2>/gs, '## $1\n\n')
+          .replace(/<h3[^>]*>(.*?)<\/h3>/gs, '### $1\n\n')
+          .replace(/<p><strong>(.*?)<\/strong><\/p>/gs, '**$1**\n\n')
+          .replace(/<p>(.*?)<\/p>/gs, '$1\n\n')
+          .replace(/<li>(.*?)<\/li>/gs, '- $1\n')
+          .replace(/<ul>|<\/ul>|<ol>|<\/ol>/gs, '\n')
+          .replace(/<table[\s\S]*?<\/table>/gs, (table) => {
+            // Preserve tables as markdown
+            const rows = table.match(/<tr[\s\S]*?<\/tr>/gs) || [];
+            return rows.map(row => {
+              const cells = (row.match(/<t[hd][^>]*>(.*?)<\/t[hd]>/gs) || [])
+                .map(c => c.replace(/<[^>]+>/g, '').trim());
+              return '| ' + cells.join(' | ') + ' |';
+            }).join('\n') + '\n';
+          })
+          .replace(/<[^>]+>/g, '')
+          .replace(/\n{3,}/g, '\n\n')
+          .trim();
+
+        // 1. ORIGIN: Publish to 0nmcp.com blog (already done above if publish=true)
+        burst.origin = !!publish;
+
+        // 2. DEV.TO: Cross-post with canonical URL pointing back to us
         if (post_to_devto) {
           const devtoKey = process.env.DEVTO_API_KEY;
           if (devtoKey) {
-            const markdown = result.content
-              .replace(/<h1[^>]*>(.*?)<\/h1>/g, '# $1')
-              .replace(/<h2[^>]*>(.*?)<\/h2>/g, '## $1')
-              .replace(/<h3[^>]*>(.*?)<\/h3>/g, '### $1')
-              .replace(/<p><strong>(.*?)<\/strong><\/p>/g, '**$1**')
-              .replace(/<p>(.*?)<\/p>/g, '$1\n\n')
-              .replace(/<[^>]+>/g, '');
-
-            await fetch('https://dev.to/api/articles', {
-              method: 'POST',
-              headers: { 'api-key': devtoKey, 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                article: {
-                  title: result.title,
-                  body_markdown: markdown,
-                  published: true,
-                  tags: result.tags.slice(0, 4),
-                  canonical_url: `https://www.0nmcp.com/blog/${result.slug}`,
-                },
-              }),
-            });
+            try {
+              const devtoRes = await fetch('https://dev.to/api/articles', {
+                method: 'POST',
+                headers: { 'api-key': devtoKey, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  article: {
+                    title: result.title,
+                    body_markdown: markdown + `\n\n---\n*Originally published at [0nmcp.com](${canonicalUrl})*`,
+                    published: true,
+                    tags: result.tags.slice(0, 4),
+                    canonical_url: canonicalUrl,
+                  },
+                }),
+              });
+              if (devtoRes.ok) {
+                const devtoData = await devtoRes.json();
+                burst.devto = devtoData.url || true;
+              }
+            } catch { burst.devto = false; }
           }
+        }
+
+        // 3. LINKEDIN: Generate a teaser post linking back to our blog
+        // (Uses CRM social posting API if connected)
+        if (publish) {
+          try {
+            const crmPit = process.env.CRM_PIT;
+            const crmLocation = process.env.CRM_LOCATION_ID;
+            if (crmPit && crmLocation) {
+              const teaser = `${result.excerpt || result.meta_description}\n\nRead the full article: ${canonicalUrl}\n\n${result.tags.map(t => '#' + t.replace(/\s+/g, '')).join(' ')}`;
+              const socialRes = await fetch('https://services.leadconnectorhq.com/social-media-posting/post', {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${crmPit}`,
+                  'Content-Type': 'application/json',
+                  'Version': '2021-07-28',
+                },
+                body: JSON.stringify({
+                  locationId: crmLocation,
+                  post: teaser,
+                  platforms: ['linkedin', 'facebook', 'instagram', 'twitter'],
+                  status: 'draft', // Draft — review before posting
+                }),
+              });
+              if (socialRes.ok) burst.linkedin = 'drafted';
+            }
+          } catch { /* social posting optional */ }
         }
 
         return {
@@ -355,7 +411,8 @@ Follow the SXO Writing Protocol exactly. Return valid JSON.`;
             text: JSON.stringify({
               status: publish ? 'published' : 'draft',
               ...result,
-              devto_posted: post_to_devto || false,
+              canonical_url: canonicalUrl,
+              radial_burst: burst,
             }, null, 2),
           }],
         };
