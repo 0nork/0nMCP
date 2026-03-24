@@ -357,6 +357,7 @@ Follow the SXO Writing Protocol exactly. Return valid JSON.`;
           const devtoKey = process.env.DEVTO_API_KEY;
           if (devtoKey) {
             try {
+              const ogImageUrl = `https://www.0nmcp.com/api/og/blog?title=${encodeURIComponent(result.title)}&category=${encodeURIComponent(result.category || '')}`;
               const devtoRes = await fetch('https://dev.to/api/articles', {
                 method: 'POST',
                 headers: { 'api-key': devtoKey, 'Content-Type': 'application/json' },
@@ -367,6 +368,7 @@ Follow the SXO Writing Protocol exactly. Return valid JSON.`;
                     published: true,
                     tags: result.tags.slice(0, 4),
                     canonical_url: canonicalUrl,
+                    main_image: ogImageUrl,
                   },
                 }),
               });
