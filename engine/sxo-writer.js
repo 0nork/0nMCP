@@ -380,31 +380,103 @@ Follow the SXO Writing Protocol exactly. Return valid JSON.`;
           }
         }
 
-        // 3. LINKEDIN: Generate a teaser post linking back to our blog
-        // (Uses CRM social posting API if connected)
+        // 3. CRM: Push blog post to CRM sub-location via Blogs API
+        // This triggers CRM-native workflows (email sequences, social posting, notifications)
         if (publish) {
-          try {
-            const crmPit = process.env.CRM_PIT;
-            const crmLocation = process.env.CRM_LOCATION_ID;
-            if (crmPit && crmLocation) {
-              const teaser = `${result.excerpt || result.meta_description}\n\nRead the full article: ${canonicalUrl}\n\n${result.tags.map(t => '#' + t.replace(/\s+/g, '')).join(' ')}`;
-              const socialRes = await fetch('https://services.leadconnectorhq.com/social-media-posting/post', {
+          const crmPit = process.env.CRM_PIT;
+          const crmLocation = process.env.CRM_LOCATION_ID;
+          const CRM_API = 'https://services.leadconnectorhq.com';
+          const crmHeaders = {
+            'Authorization': `Bearer ${crmPit}`,
+            'Content-Type': 'application/json',
+            'Version': '2021-07-28',
+          };
+
+          if (crmPit && crmLocation) {
+            // 3a. Create/find the blog in CRM
+            try {
+              // First check if we have a blog set up
+              const blogsRes = await fetch(`${CRM_API}/blogs/?locationId=${crmLocation}`, {
+                headers: crmHeaders,
+              });
+              let blogId = null;
+
+              if (blogsRes.ok) {
+                const blogsData = await blogsRes.json();
+                const blogs = blogsData.blogs || blogsData.data || [];
+                // Use first blog or create one
+                if (blogs.length > 0) {
+                  blogId = blogs[0].id || blogs[0]._id;
+                }
+              }
+
+              // If no blog exists, try to create one
+              if (!blogId) {
+                const createBlogRes = await fetch(`${CRM_API}/blogs/`, {
+                  method: 'POST',
+                  headers: crmHeaders,
+                  body: JSON.stringify({
+                    locationId: crmLocation,
+                    title: '0nMCP Blog',
+                    description: 'AI automation insights from 0nMCP',
+                  }),
+                });
+                if (createBlogRes.ok) {
+                  const newBlog = await createBlogRes.json();
+                  blogId = newBlog.id || newBlog._id || newBlog.blog?.id;
+                }
+              }
+
+              // 3b. Create the blog post in CRM
+              if (blogId) {
+                const ogImageUrl = `https://www.0nmcp.com/api/og/blog?title=${encodeURIComponent(result.title)}&category=${encodeURIComponent(result.category || '')}`;
+
+                const crmPostRes = await fetch(`${CRM_API}/blogs/${blogId}/post`, {
+                  method: 'POST',
+                  headers: crmHeaders,
+                  body: JSON.stringify({
+                    locationId: crmLocation,
+                    title: result.title,
+                    body: result.content,
+                    slug: result.slug,
+                    status: 'published',
+                    imageUrl: ogImageUrl,
+                    tags: result.tags,
+                    metaTitle: result.title,
+                    metaDescription: result.meta_description,
+                    canonicalUrl: canonicalUrl,
+                  }),
+                });
+
+                if (crmPostRes.ok) {
+                  burst.crm = 'published';
+                } else {
+                  burst.crm = `failed: ${crmPostRes.status}`;
+                }
+              } else {
+                burst.crm = 'no_blog_found';
+              }
+            } catch (err) {
+              burst.crm = `error: ${err.message}`;
+            }
+
+            // 3c. SOCIAL: Create a teaser post via CRM social posting
+            // This uses CRM's native social publisher (connected accounts)
+            try {
+              const teaser = `${result.excerpt || result.meta_description}\n\nRead more: ${canonicalUrl}\n\n${result.tags.slice(0, 5).map(t => '#' + t.replace(/\s+/g, '')).join(' ')}`;
+              const socialRes = await fetch(`${CRM_API}/social-media-posting/post`, {
                 method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${crmPit}`,
-                  'Content-Type': 'application/json',
-                  'Version': '2021-07-28',
-                },
+                headers: crmHeaders,
                 body: JSON.stringify({
                   locationId: crmLocation,
                   post: teaser,
                   platforms: ['linkedin', 'facebook', 'instagram', 'twitter'],
-                  status: 'draft', // Draft — review before posting
+                  status: 'draft', // Draft — Mike reviews before posting
                 }),
               });
-              if (socialRes.ok) burst.linkedin = 'drafted';
-            }
-          } catch { /* social posting optional */ }
+              if (socialRes.ok) burst.social = 'drafted';
+            } catch { burst.social = 'skipped'; }
+          }
         }
 
         return {
