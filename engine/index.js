@@ -51,6 +51,9 @@ export { TrainingFeedEngine, registerFeedTools, FEED_SOURCES } from "./training-
 // ── Multi-AI Council ────────────────────────────────────────
 export { registerCouncilTools, getAvailableProviders, askAll, PROVIDERS } from "./multi-ai.js";
 
+// ── SXO Blog Writer Engine ──────────────────────────────────
+export { registerSxoWriterTools, scoreContent, SXO_SYSTEM_PROMPT } from "./sxo-writer.js";
+
 // ── Imports for tool handlers ──────────────────────────────
 import { parseFile } from "./parser.js";
 import { mapEnvVars, groupByService, validateMapping } from "./mapper.js";

@@ -31,7 +31,7 @@ import { registerVaultTools, autoUnseal } from "./vault/index.js";
 import { registerContainerTools } from "./vault/tools-container.js";
 import { registerDeedTools } from "./vault/tools-deed.js";
 import { unsealedCache } from "./vault/cache.js";
-import { registerEngineTools, registerTrainingTools, registerFeedTools, registerCouncilTools } from "./engine/index.js";
+import { registerEngineTools, registerTrainingTools, registerFeedTools, registerCouncilTools, registerSxoWriterTools } from "./engine/index.js";
 import { CapabilityProxy } from "./capability-proxy.js";
 import { SERVICE_CATALOG } from "./catalog.js";
 
@@ -85,6 +85,7 @@ registerEngineTools(server, z);
 registerTrainingTools(server, z);
 registerFeedTools(server, z);
 registerCouncilTools(server, z);
+registerSxoWriterTools(server, z);
 
 // ============================================================
 // VAULT CONTAINER TOOLS (patent-pending 0nVault containers)
