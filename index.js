@@ -33,6 +33,7 @@ import { registerDeedTools } from "./vault/tools-deed.js";
 import { unsealedCache } from "./vault/cache.js";
 import { registerEngineTools, registerTrainingTools, registerFeedTools, registerCouncilTools, registerSxoWriterTools } from "./engine/index.js";
 import { registerBrainTools } from "./engine/brain.js";
+import { registerLocalAITools } from "./engine/local-ai.js";
 import { CapabilityProxy } from "./capability-proxy.js";
 import { SERVICE_CATALOG } from "./catalog.js";
 
@@ -88,6 +89,7 @@ registerFeedTools(server, z);
 registerCouncilTools(server, z);
 registerSxoWriterTools(server, z);
 registerBrainTools(server, z);
+registerLocalAITools(server, z);
 
 // ============================================================
 // VAULT CONTAINER TOOLS (patent-pending 0nVault containers)
