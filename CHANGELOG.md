@@ -2,6 +2,45 @@
 
 All notable changes to 0nMCP are documented here.
 
+## [2.8.0] — 2026-03-26
+
+### Multi-AI Council
+- 4 new MCP tools: `council_ask`, `council_debate`, `council_solve` — query GPT-4o, Gemini, Grok, and Claude simultaneously
+- Council sessions auto-generate training data for 0nAI pipeline
+
+### 0nAI Training Center
+- 8 new MCP tools: `training_feed`, `training_ingest`, `training_generate`, `training_score`, `training_dataset`, `training_export`, `training_search`, `training_review`
+- 7 database tables for persistent training data
+- 11 verified public sources (HN, arXiv, Dev.to, GitHub, npm, CoinGecko, Wikipedia)
+- Export as Anthropic/OpenAI/Alpaca JSONL
+
+### Agent Studio + 50 CRM Tools
+- Agent Studio module (8 tools) — AI-powered sequences replace workflow builder
+- 50 new CRM tools: Knowledge Base, Voice AI, SaaS, Funnels, Forms, Surveys
+- Fixed duplicate CRM tool registrations across modules
+
+### SXO Content Engine
+- SXO Blog Writer: self-improving content that learns from every post
+- SXO Radial Burst: origin on 0nmcp.com → Dev.to → LinkedIn → all social channels
+- CRM blog posting + social drafting integration
+- OG image auto-inclusion in Dev.to radial burst
+
+### 0n Standard
+- `brand.0n` template — complete brand profile for all 0n services
+- 0n Field Standard — universal field resolution across all services
+- 0n Everywhere — universal product template, 7 distribution channels per feature
+
+### Onboarding & Distribution
+- `npx 0nmcp install` — one-command onboarding
+- Viral social post generator in install flow (PACG multi-platform)
+- CRM Marketplace apps: autoresponder, lead scorer, content AI + shared OAuth/webhook lib
+- Grok/any-AI setup guide
+
+### Stats (verified)
+- **819 total tools** — 545 catalog + 245 CRM + 4 vault + 8 container + 6 deed + 6 engine + 5 app
+- **48 services** across **21 categories**
+- **1,078 total capabilities** — 104 actions + 155 triggers
+
 ## [2.4.0] — 2026-03-12
 
 ### Zero-Knowledge Capability Proxy
