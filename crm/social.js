@@ -4,6 +4,13 @@
 // Full coverage of Social Media Posting endpoints (posts, accounts,
 // categories, tags, CSV import/export, OAuth, reviews) and Blog
 // endpoints (blogs, authors, categories, posts, slug checks).
+//
+// REDDIT NOTE: Reddit is NOT available as a CRM-native social
+// provider. For Reddit posting, comments, monitoring, and search,
+// use the dedicated reddit_* tools (registered via reddit.js).
+// CRM social + Reddit can be combined in workflows — e.g. use
+// crm_create_social_post for Twitter/FB/IG/LinkedIn, then
+// reddit_submit_post for Reddit cross-posting.
 // ============================================================
 
 export default [
@@ -112,7 +119,7 @@ export default [
 
   {
     name: "crm_create_social_post",
-    description: "Create a new social media post. Can be published immediately or scheduled.",
+    description: "Create a new social media post. Can be published immediately or scheduled. Supports Facebook, Instagram, Twitter/X, LinkedIn, Google Business, and TikTok. NOTE: For Reddit posts, use the reddit_submit_post tool instead — Reddit is not a CRM-native social provider.",
     method: "POST",
     path: "/social-media-posting/",
     params: {
@@ -624,7 +631,7 @@ export default [
 
   {
     name: "crm_start_social_oauth",
-    description: "Start an OAuth flow to connect a social media provider account.",
+    description: "Start an OAuth flow to connect a CRM-native social media provider account (Facebook, Instagram, Google, Twitter/X, LinkedIn, TikTok). NOTE: Reddit OAuth is handled separately via the 0nMCP reddit connection — see connect_service with service='reddit'.",
     method: "GET",
     path: "/social-media-posting/oauth/:provider/start",
     params: {

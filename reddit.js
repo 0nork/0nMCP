@@ -4,6 +4,16 @@
 // Posts, comments, monitoring with auto/manual mode safety.
 // Reddit aggressively bans automated promotional activity.
 // Default mode: MANUAL. Auto mode requires double confirmation.
+//
+// CRM INTEGRATION:
+// Reddit tools work alongside CRM social tools. For workflows
+// that combine CRM + Reddit:
+//   - CRM social (crm_create_social_post) → FB, IG, Twitter, LinkedIn
+//   - Reddit (reddit_submit_post) → Reddit cross-posting
+//   - reddit_search + CRM contacts → Lead generation from Reddit
+//   - reddit_monitor_keywords → Brand/competitor monitoring
+// See: ~/.0n/workflows/reddit-social-crosspost.0n
+// See: ~/.0n/workflows/reddit-monitor-to-crm.0n
 // ============================================================
 
 import { getService } from "./catalog.js";
