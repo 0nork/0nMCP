@@ -1833,6 +1833,35 @@ export const SERVICE_CATALOG = {
     }),
   },
 
+  // ── Ollama (Local AI) ──────────────────────────────────────
+  ollama: {
+    name: "Ollama",
+    type: "ai",
+    description: "Local AI inference — chat completions, embeddings, model management. Free, private, no API costs.",
+    baseUrl: "http://localhost:11434",
+    authType: "none",
+    credentialKeys: [],
+    capabilities: [
+      { name: "generate_text", actions: ["create"], description: "Generate text completions with local models (Llama, Mistral, etc.)" },
+      { name: "chat_completion", actions: ["create"], description: "Multi-turn chat with local models" },
+      { name: "create_embedding", actions: ["create"], description: "Create text embeddings locally" },
+      { name: "manage_models", actions: ["list", "pull", "delete", "show"], description: "List, pull, inspect, and delete local models" },
+    ],
+    endpoints: {
+      chat_completion:  { method: "POST", path: "/api/chat", body: { model: "llama3.1", messages: [], stream: false } },
+      generate:         { method: "POST", path: "/api/generate", body: { model: "llama3.1", prompt: "", stream: false } },
+      create_embedding: { method: "POST", path: "/api/embed", body: { model: "llama3.1", input: "" } },
+      list_models:      { method: "GET",  path: "/api/tags" },
+      show_model:       { method: "POST", path: "/api/show", body: { name: "" } },
+      pull_model:       { method: "POST", path: "/api/pull", body: { name: "", stream: false } },
+      delete_model:     { method: "DELETE", path: "/api/delete", body: { name: "" } },
+      list_running:     { method: "GET",  path: "/api/ps" },
+    },
+    authHeader: () => ({
+      "Content-Type": "application/json",
+    }),
+  },
+
 };
 
 // ── Helpers ────────────────────────────────────────────────

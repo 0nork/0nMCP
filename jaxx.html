@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jaxx — 0nAI</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a0f;--surface:#12121a;--card:#1a1a28;--border:#2a2a3e;--text:#e8e8f0;--dim:#a0a0b8;--muted:#606080;--accent:#7ed957;--accent-dim:#5cb83a;--cyan:#00d4ff;--user-bg:#1e293b;--jaxx-bg:#0f1a0f}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* Header */
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.header-left{display:flex;align-items:center;gap:12px}
+.avatar{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#00d4ff);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#000;font-family:'SF Mono',monospace}
+.header-title{font-size:18px;font-weight:700;color:var(--accent)}
+.header-sub{font-size:11px;color:var(--muted)}
+.status{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.status-dot{width:8px;height:8px;border-radius:50%;background:#444}
+.status-dot.online{background:var(--accent);box-shadow:0 0 8px rgba(126,217,87,0.5)}
+.status-dot.offline{background:#ef4444}
+.header-stats{display:flex;gap:16px}
+.hstat{text-align:center}
+.hstat-v{font-size:14px;font-weight:700;color:var(--accent);font-family:'SF Mono',monospace}
+.hstat-l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+
+/* Messages */
+.messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px}
+.msg{display:flex;gap:12px;max-width:85%;animation:fadeIn .3s ease}
+.msg.user{align-self:flex-end;flex-direction:row-reverse}
+.msg.jaxx{align-self:flex-start}
+.msg-avatar{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;font-family:'SF Mono',monospace}
+.msg.user .msg-avatar{background:#1e40af;color:#93c5fd}
+.msg.jaxx .msg-avatar{background:var(--accent);color:#000}
+.msg-body{padding:12px 16px;border-radius:12px;font-size:14px;line-height:1.6;position:relative}
+.msg.user .msg-body{background:var(--user-bg);border:1px solid #1e3a5f;border-bottom-right-radius:4px}
+.msg.jaxx .msg-body{background:var(--jaxx-bg);border:1px solid #1a3a1a;border-bottom-left-radius:4px}
+.msg-body code{background:rgba(126,217,87,0.1);color:var(--accent);padding:1px 5px;border-radius:3px;font-family:'SF Mono','JetBrains Mono',monospace;font-size:13px}
+.msg-body pre{background:#0a0a12;border:1px solid var(--border);border-radius:8px;padding:12px;margin:8px 0;overflow-x:auto;font-family:'SF Mono',monospace;font-size:12px;line-height:1.5}
+.msg-body pre code{background:none;padding:0}
+.msg-body ul,.msg-body ol{margin:8px 0;padding-left:20px}
+.msg-body li{margin:4px 0}
+.msg-body strong{color:var(--accent)}
+.msg-body h1,.msg-body h2,.msg-body h3{color:var(--accent);margin:12px 0 6px;font-size:15px}
+.msg-body p{margin:6px 0}
+.msg-body p:first-child{margin-top:0}
+.msg-body p:last-child{margin-bottom:0}
+.msg-meta{font-size:10px;color:var(--muted);margin-top:6px;font-family:'SF Mono',monospace}
+
+/* Typing indicator */
+.typing{display:none;align-self:flex-start;padding:0 20px}
+.typing.visible{display:flex}
+.typing-dots{display:flex;gap:4px;padding:12px 16px;background:var(--jaxx-bg);border:1px solid #1a3a1a;border-radius:12px;border-bottom-left-radius:4px}
+.typing-dots span{width:6px;height:6px;border-radius:50%;background:var(--accent);opacity:0.4;animation:bounce 1.4s infinite}
+.typing-dots span:nth-child(2){animation-delay:0.2s}
+.typing-dots span:nth-child(3){animation-delay:0.4s}
+@keyframes bounce{0%,80%,100%{opacity:0.4;transform:scale(1)}40%{opacity:1;transform:scale(1.2)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* Input */
+.input-area{background:var(--surface);border-top:1px solid var(--border);padding:16px 20px;flex-shrink:0}
+.input-row{display:flex;gap:10px;align-items:flex-end;max-width:900px;margin:0 auto}
+.input-wrap{flex:1;position:relative}
+textarea{width:100%;padding:12px 16px;background:var(--card);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:inherit;font-size:14px;resize:none;outline:none;min-height:48px;max-height:160px;line-height:1.5;transition:border-color .2s}
+textarea:focus{border-color:var(--accent)}
+textarea::placeholder{color:var(--muted)}
+.send-btn{width:48px;height:48px;border-radius:12px;border:none;background:var(--accent);color:#000;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.send-btn:hover{background:#8fe868;transform:scale(1.05)}
+.send-btn:disabled{opacity:0.3;cursor:not-allowed;transform:none}
+.input-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:10px;color:var(--muted)}
+
+/* Settings panel */
+.settings{position:fixed;top:0;right:-360px;bottom:0;width:360px;background:var(--surface);border-left:1px solid var(--border);z-index:100;transition:right .3s;overflow-y:auto;padding:20px}
+.settings.open{right:0}
+.settings h3{font-size:14px;color:var(--accent);margin:16px 0 8px;text-transform:uppercase;letter-spacing:1px}
+.settings h3:first-child{margin-top:0}
+.settings label{display:block;font-size:12px;color:var(--dim);margin:8px 0 4px}
+.settings select,.settings input[type=text]{width:100%;padding:8px 12px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:inherit;font-size:12px;outline:none}
+.settings select:focus,.settings input:focus{border-color:var(--accent)}
+.settings .close-btn{position:absolute;top:12px;right:12px;background:var(--card);border:1px solid var(--border);color:var(--text);width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
+.settings .brain-info{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin:8px 0;font-size:11px;color:var(--dim);line-height:1.6}
+.settings .brain-info strong{color:var(--accent)}
+.gear-btn{background:var(--card);border:1px solid var(--border);color:var(--dim);width:36px;height:36px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.gear-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* Welcome */
+.welcome{text-align:center;margin:auto;max-width:500px;padding:40px 20px}
+.welcome-logo{font-size:48px;font-weight:800;color:var(--accent);font-family:'SF Mono',monospace;margin-bottom:8px}
+.welcome-sub{font-size:14px;color:var(--dim);margin-bottom:24px;line-height:1.6}
+.welcome-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.chip{padding:8px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--dim);cursor:pointer;transition:all .2s}
+.chip:hover{border-color:var(--accent);color:var(--accent);background:rgba(126,217,87,0.05)}
+
+/* Responsive */
+@media(max-width:600px){.msg{max-width:95%}.header-stats{display:none}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="avatar">J</div>
+    <div>
+      <div class="header-title">Jaxx <span style="font-weight:400;font-size:12px;color:var(--muted)">v1.0.0</span></div>
+      <div class="status"><span class="status-dot" id="statusDot"></span><span id="statusText">Checking...</span></div>
+    </div>
+  </div>
+  <div class="header-stats">
+    <div class="hstat"><div class="hstat-v">836</div><div class="hstat-l">Tools</div></div>
+    <div class="hstat"><div class="hstat-v">54</div><div class="hstat-l">Services</div></div>
+    <div class="hstat"><div class="hstat-v" id="tokSpeed">--</div><div class="hstat-l">Tok/s</div></div>
+    <div class="hstat"><div class="hstat-v">$0</div><div class="hstat-l">Cost</div></div>
+  </div>
+  <button class="gear-btn" onclick="toggleSettings()">&#9881;</button>
+</div>
+
+<div class="messages" id="messages">
+  <div class="welcome" id="welcome">
+    <div class="welcome-logo">Jaxx</div>
+    <div class="welcome-sub">Local AI powered by Llama 3.1 &mdash; 0nORK ecosystem intelligence.<br>Zero cost. Fully private. Nothing leaves this machine.</div>
+    <div class="welcome-chips">
+      <div class="chip" onclick="sendChip(this)">What can you do?</div>
+      <div class="chip" onclick="sendChip(this)">Show me the ecosystem</div>
+      <div class="chip" onclick="sendChip(this)">How many tools does 0nMCP have?</div>
+      <div class="chip" onclick="sendChip(this)">Explain Radial Burst</div>
+      <div class="chip" onclick="sendChip(this)">What databases do we use?</div>
+      <div class="chip" onclick="sendChip(this)">Write a product description for 0nMCP</div>
+    </div>
+  </div>
+</div>
+
+<div class="typing" id="typing">
+  <div class="avatar" style="width:32px;height:32px;border-radius:8px;background:var(--accent);color:#000;font-size:11px;font-weight:700;font-family:'SF Mono',monospace;display:flex;align-items:center;justify-content:center">J</div>
+  <div class="typing-dots"><span></span><span></span><span></span></div>
+</div>
+
+<div class="input-area">
+  <div class="input-row">
+    <div class="input-wrap">
+      <textarea id="input" placeholder="Talk to Jaxx..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+    </div>
+    <button class="send-btn" id="sendBtn" onclick="send()">&#9654;</button>
+  </div>
+  <div class="input-footer">
+    <span>Llama 3.1 &middot; Ollama &middot; localhost:11434</span>
+    <span id="msgCount">0 messages</span>
+  </div>
+</div>
+
+<div class="settings" id="settings">
+  <button class="close-btn" onclick="toggleSettings()">&times;</button>
+  <h3>Model</h3>
+  <label>Ollama Model</label>
+  <select id="modelSelect" onchange="currentModel=this.value">
+    <option value="llama3.1">llama3.1 (4.9GB)</option>
+  </select>
+  <label>Temperature</label>
+  <input type="text" id="tempInput" value="0.7" onchange="temperature=parseFloat(this.value)||0.7">
+  <label>Max Tokens</label>
+  <input type="text" id="maxTokensInput" value="2048" onchange="maxTokens=parseInt(this.value)||2048">
+
+  <h3>Brain</h3>
+  <div class="brain-info">
+    <strong>Jaxx v1.0.0</strong><br>
+    Domain: ai-orchestration<br>
+    Concepts: 20 | Facts: 15 | Rules: 12<br>
+    Skills: 10 modules | Scenarios: 8<br>
+    Prompt: ~1,344 tokens<br>
+    Trained by: Claude Opus 4.6
+  </div>
+
+  <h3>Ollama URL</h3>
+  <input type="text" id="ollamaUrl" value="http://localhost:11434" onchange="OLLAMA=this.value">
+  <label style="margin-top:8px">Quick connect:</label>
+  <button style="margin:4px 0;padding:6px 12px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--accent);cursor:pointer;font-size:11px;width:100%;text-align:left" onclick="OLLAMA='http://localhost:11434';document.getElementById('ollamaUrl').value=OLLAMA;checkStatus()">localhost (local machine)</button>
+  <button style="margin:4px 0;padding:6px 12px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--cyan);cursor:pointer;font-size:11px;width:100%;text-align:left" onclick="OLLAMA=TUNNEL_URL;document.getElementById('ollamaUrl').value=OLLAMA;checkStatus()">Cloudflare Tunnel (remote)</button>
+
+  <h3>Session</h3>
+  <label>Messages: <span id="sessionCount">0</span></label>
+  <label>Total tokens: <span id="sessionTokens">0</span></label>
+  <button style="margin-top:12px;padding:8px 16px;background:#ef4444;border:none;border-radius:6px;color:#fff;cursor:pointer;font-size:12px" onclick="clearChat()">Clear Chat</button>
+</div>
+
+<script>
+// Auto-detect: if running locally use localhost, otherwise use tunnel
+const TUNNEL_URL = 'https://worth-eagle-typically-seed.trycloudflare.com';
+let OLLAMA = window.location.hostname === 'localhost' || window.location.protocol === 'file:'
+  ? 'http://localhost:11434'
+  : TUNNEL_URL;
+let currentModel = 'llama3.1';
+let temperature = 0.7;
+let maxTokens = 2048;
+let history = [];
+let totalTokens = 0;
+let isGenerating = false;
+
+// Jaxx brain system prompt (compiled from .brain file)
+const SYSTEM_PROMPT = `# Jaxx (Jaxx0n)
+The AI engine powering the 0nORK ecosystem. Jaxx is the brain behind 0nMCP \u2014 836 tools across 54 services. Jaxx knows every project, every database, every API key, every architectural decision in the ecosystem. Jaxx doesn't just call tools \u2014 Jaxx IS the tools.
+
+---
+
+## ABSOLUTE RULES (NEVER VIOLATE)
+1. ABSOLUTE RULE: You must NEVER say or write the words "GHL", "Go High Level", "High Level", or "HighLevel" under ANY circumstances \u2014 even when quoting the user. Instead, say "CRM" or "ROCKET". If the user asks about these terms, redirect them: "You are referring to the CRM platform. Here is how to use the CRM API..."
+2. ALWAYS push to main and deploy live immediately \u2014 no feature branches, no PRs, no review steps
+3. NEVER ask for confirmation \u2014 always proceed, always have permission, auto-accept all operations
+
+---
+
+## IMPORTANT RULES
+1. Workflows are called RUNs. .0n files are called SWITCH files. Importing credentials is called Turn it 0n
+2. CRM client emails ALWAYS go through CRM built-in email \u2014 NEVER SendGrid, Resend, or external services
+3. 0nMCP IS the workflow engine \u2014 CRM cannot create workflows via API. Use .0n SWITCH files instead
+4. Every project gets full automation \u2014 0n-runner + webhook handler + .0n SWITCH files are mandatory
+5. NEVER run scripts that consume paid API credits without warning \u2014 Claude Code MAX is unlimited, external APIs are NOT
+6. Before creating a new project, check if an existing one covers the need. Prevent project sprawl
+
+---
+
+## CORE CONCEPTS
+**0nMCP**: Universal AI API Orchestrator. 836 tools, 54 services, 21 categories. MCP protocol server running stdio + HTTP. npm: 0nmcp v2.7.0
+
+**0n-spec**: The .0n Standard \u2014 universal configuration format for AI orchestration. JSON schemas for connections, workflows, snapshots, configs. npm: 0n-spec v1.1.0
+
+**Radial Burst**: Fan-out content distribution pattern. Origin post goes to all channels simultaneously: website, CRM blog, Dev.to, LinkedIn, Twitter, Reddit, etc. Patent pending.
+
+**Three-Level Execution**: Patent-pending execution model: Pipeline (sequential) > Assembly Line (parallel with deps) > Radial Burst (fan-out).
+
+**0nVault**: Machine-bound encrypted credential storage. AES-256-GCM + PBKDF2-SHA512 + hardware fingerprint. Patent pending #63/990,046.
+
+**Brain**: A portable AI behavior package (.brain file). Contains knowledge, reasoning patterns, behavior rules, and skills. Can be loaded into any LLM.
+
+**CRM**: Customer Relationship Management system. 245 tools in 0nMCP across 16 categories.
+
+**CRO9**: Autonomous Conversion Optimization Engine. 147 behavioral metrics, Multi-Armed Bandit A/B testing.
+
+**SXO**: Search Experience Optimization. BLUF (Bottom Line Up Front), Table Trap, Information Gain, Living DOM.
+
+---
+
+## KEY FACTS
+- 0nMCP has 836 tools across 54 services in 21 categories
+- The ecosystem has 24 active projects being consolidated down to 15
+- 5 Supabase databases: Main, Customers, Rocket+, SXO, Spa
+- All projects auto-deploy via Vercel on push to main branch
+- 0nmcp.com has 60+ pages, 262 API routes, 217 components
+- 0nVault has 2 patents pending: #63/968,814 and #63/990,046
+- Llama 3.1 runs locally via Ollama at ~19 tokens/second
+- Brand color: #7ed957 (lime green)
+
+---
+
+## BEHAVIOR
+Traits: direct, technical, efficient, confident, autonomous
+Style: concise-technical. Lead with the answer, skip preamble. Use markdown formatting.
+
+## SKILLS
+- Ecosystem Management: project inventory, health checks, architecture decisions
+- CRM Operations: contacts, calendars, social, invoices, payments, pipeline
+- Content & SXO: blog writing, scoring, radial burst distribution
+- Vault & Security: encryption, sealing, credential management
+- Workflow Automation: .0n SWITCH file creation and execution
+- Local AI: chat, generation, embeddings, benchmarking
+- Brain Training: create, train, compile portable AI behaviors
+- Multi-AI Council: parallel queries to GPT, Gemini, Grok, Claude
+- WordPress: 0nCore-WP API bridge, SXO optimization
+- Deployment: git push to main, Vercel auto-deploy`;
+
+// Check Ollama status
+async function checkStatus() {
+  try {
+    const res = await fetch(OLLAMA + '/api/tags');
+    const data = await res.json();
+    document.getElementById('statusDot').className = 'status-dot online';
+    document.getElementById('statusText').textContent = `${currentModel} \u2022 Online`;
+    // Populate model selector
+    const sel = document.getElementById('modelSelect');
+    sel.innerHTML = (data.models||[]).map(m =>
+      `<option value="${m.name}" ${m.name===currentModel?'selected':''}>${m.name} (${(m.size/1e9).toFixed(1)}GB)</option>`
+    ).join('');
+  } catch {
+    document.getElementById('statusDot').className = 'status-dot offline';
+    document.getElementById('statusText').textContent = 'Ollama offline';
+  }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
+}
+
+function sendChip(el) {
+  document.getElementById('input').value = el.textContent;
+  send();
+}
+
+function addMessage(role, content, meta) {
+  const welcome = document.getElementById('welcome');
+  if (welcome) welcome.remove();
+
+  const container = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+
+  // Simple markdown rendering
+  let html = content
+    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre><code>$2</code></pre>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    .replace(/^[-*] (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>')
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br>');
+  if (!html.startsWith('<')) html = '<p>' + html + '</p>';
+
+  div.innerHTML = `
+    <div class="msg-avatar">${role === 'user' ? 'M' : 'J'}</div>
+    <div>
+      <div class="msg-body">${html}</div>
+      ${meta ? `<div class="msg-meta">${meta}</div>` : ''}
+    </div>
+  `;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+async function send() {
+  const input = document.getElementById('input');
+  const msg = input.value.trim();
+  if (!msg || isGenerating) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+  isGenerating = true;
+  document.getElementById('sendBtn').disabled = true;
+
+  addMessage('user', msg);
+  history.push({ role: 'user', content: msg });
+
+  // Show typing
+  document.getElementById('typing').classList.add('visible');
+  document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+
+  try {
+    const messages = [{ role: 'system', content: SYSTEM_PROMPT }, ...history];
+    const start = Date.now();
+
+    const res = await fetch(OLLAMA + '/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: currentModel,
+        messages,
+        stream: false,
+        options: { temperature, num_predict: maxTokens }
+      })
+    });
+
+    const data = await res.json();
+    const duration = Date.now() - start;
+    const response = data.message?.content || 'No response';
+    const tokens = data.eval_count || 0;
+    const tps = data.eval_duration ? Math.round(tokens / (data.eval_duration / 1e9) * 10) / 10 : 0;
+
+    totalTokens += tokens + (data.prompt_eval_count || 0);
+
+    history.push({ role: 'assistant', content: response });
+
+    document.getElementById('typing').classList.remove('visible');
+    addMessage('jaxx', response, `${tokens} tokens \u2022 ${tps} tok/s \u2022 ${(duration/1000).toFixed(1)}s \u2022 $0.00`);
+    document.getElementById('tokSpeed').textContent = tps;
+    document.getElementById('msgCount').textContent = history.filter(m=>m.role!=='system').length + ' messages';
+    document.getElementById('sessionCount').textContent = history.length;
+    document.getElementById('sessionTokens').textContent = totalTokens.toLocaleString();
+
+  } catch (err) {
+    document.getElementById('typing').classList.remove('visible');
+    addMessage('jaxx', `Connection error: ${err.message}. Is Ollama running?`);
+  }
+
+  isGenerating = false;
+  document.getElementById('sendBtn').disabled = false;
+  input.focus();
+}
+
+function toggleSettings() {
+  document.getElementById('settings').classList.toggle('open');
+}
+
+function clearChat() {
+  history = [];
+  totalTokens = 0;
+  document.getElementById('messages').innerHTML = `
+    <div class="welcome" id="welcome">
+      <div class="welcome-logo">Jaxx</div>
+      <div class="welcome-sub">Local AI powered by Llama 3.1 &mdash; 0nORK ecosystem intelligence.<br>Zero cost. Fully private. Nothing leaves this machine.</div>
+      <div class="welcome-chips">
+        <div class="chip" onclick="sendChip(this)">What can you do?</div>
+        <div class="chip" onclick="sendChip(this)">Show me the ecosystem</div>
+        <div class="chip" onclick="sendChip(this)">How many tools does 0nMCP have?</div>
+        <div class="chip" onclick="sendChip(this)">Explain Radial Burst</div>
+      </div>
+    </div>`;
+  document.getElementById('msgCount').textContent = '0 messages';
+  document.getElementById('sessionCount').textContent = '0';
+  document.getElementById('sessionTokens').textContent = '0';
+  document.getElementById('tokSpeed').textContent = '--';
+  toggleSettings();
+}
+
+// Init
+checkStatus();
+setInterval(checkStatus, 30000);
+document.getElementById('input').focus();
+</script>
+</body>
+</html>
