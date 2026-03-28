@@ -1862,6 +1862,62 @@ export const SERVICE_CATALOG = {
     }),
   },
 
+  // ── Reddit ──────────────────────────────────────────────────
+  reddit: {
+    name: "Reddit",
+    type: "social",
+    description: "Social platform — posts, comments, subreddits, user profiles, search, monitoring via Reddit Data API. IMPORTANT: Reddit requires pre-approved OAuth apps as of Nov 2025. Auto-posting must comply with Reddit's Responsible Builder Policy. Default mode is MANUAL — auto mode requires double confirmation.",
+    baseUrl: "https://oauth.reddit.com",
+    authType: "oauth",
+    credentialKeys: ["accessToken", "refreshToken", "clientId", "clientSecret", "username"],
+    safetyConfig: {
+      defaultMode: "manual",
+      autoModeRequiresDoubleConfirmation: true,
+      minPostDelayMs: 600000,
+      minCommentDelayMs: 300000,
+      maxPostsPerHour: 3,
+      maxCommentsPerHour: 10,
+      rateLimitPerMinute: 60,
+      disclaimer: "Reddit aggressively bans automated promotional activity. Accounts suspected of bot behavior may be required to pass human verification (passkeys, biometrics, or government ID). All automated accounts must carry an [APP] label. Respect the 90/10 rule: 90% genuine value, 10% promotional. Each subreddit has its own rules — check before posting.",
+    },
+    capabilities: [
+      { name: "manage_posts", actions: ["create", "list", "get", "delete"], description: "Submit text/link posts to subreddits and manage them" },
+      { name: "manage_comments", actions: ["create", "list", "get", "delete"], description: "Post comments and replies on Reddit threads" },
+      { name: "manage_subreddits", actions: ["get", "list", "search"], description: "Browse and search subreddit info, rules, and hot/new/top posts" },
+      { name: "manage_profile", actions: ["get"], description: "View authenticated user profile, karma, and account age" },
+      { name: "search_content", actions: ["search"], description: "Search Reddit posts, comments, and subreddits" },
+      { name: "monitor_mentions", actions: ["search"], description: "Monitor keyword mentions across Reddit for brand/topic tracking" },
+      { name: "manage_messages", actions: ["list", "send"], description: "Read and send private messages" },
+    ],
+    endpoints: {
+      submit_post:          { method: "POST", path: "/api/submit", contentType: "application/x-www-form-urlencoded", body: { sr: "", kind: "self", title: "", text: "" } },
+      submit_link:          { method: "POST", path: "/api/submit", contentType: "application/x-www-form-urlencoded", body: { sr: "", kind: "link", title: "", url: "" } },
+      get_post:             { method: "GET",  path: "/r/{subreddit}/comments/{postId}" },
+      delete_thing:         { method: "POST", path: "/api/del", contentType: "application/x-www-form-urlencoded", body: { id: "" } },
+      get_user_posts:       { method: "GET",  path: "/user/{username}/submitted", query: ["sort", "t", "limit"] },
+      post_comment:         { method: "POST", path: "/api/comment", contentType: "application/x-www-form-urlencoded", body: { thing_id: "", text: "" } },
+      get_comments:         { method: "GET",  path: "/r/{subreddit}/comments/{postId}", query: ["sort", "limit", "depth"] },
+      get_subreddit:        { method: "GET",  path: "/r/{subreddit}/about" },
+      get_subreddit_rules:  { method: "GET",  path: "/r/{subreddit}/about/rules" },
+      get_hot:              { method: "GET",  path: "/r/{subreddit}/hot", query: ["limit", "after"] },
+      get_new:              { method: "GET",  path: "/r/{subreddit}/new", query: ["limit", "after"] },
+      get_top:              { method: "GET",  path: "/r/{subreddit}/top", query: ["t", "limit", "after"] },
+      search_subreddits:    { method: "GET",  path: "/subreddits/search", query: ["q", "limit", "sort"] },
+      list_my_subreddits:   { method: "GET",  path: "/subreddits/mine/subscriber", query: ["limit", "after"] },
+      search_posts:         { method: "GET",  path: "/search", query: ["q", "type", "sort", "t", "limit", "restrict_sr", "sr"] },
+      get_me:               { method: "GET",  path: "/api/v1/me" },
+      get_user:             { method: "GET",  path: "/user/{username}/about" },
+      get_user_comments:    { method: "GET",  path: "/user/{username}/comments", query: ["sort", "t", "limit"] },
+      get_inbox:            { method: "GET",  path: "/message/inbox", query: ["limit", "after"] },
+      send_message:         { method: "POST", path: "/api/compose", contentType: "application/x-www-form-urlencoded", body: { to: "", subject: "", text: "" } },
+      vote:                 { method: "POST", path: "/api/vote", contentType: "application/x-www-form-urlencoded", body: { id: "", dir: 1 } },
+    },
+    authHeader: (creds) => ({
+      "Authorization": `Bearer ${creds.accessToken}`,
+      "User-Agent": `0nMCP:RedditService:1.0.0 (by /u/${creds.username || "0nMCP"})`,
+    }),
+  },
+
 };
 
 // ── Helpers ────────────────────────────────────────────────

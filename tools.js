@@ -7,6 +7,7 @@
 
 import { z } from "zod";
 import { SERVICE_CATALOG, listServices, getService } from "./catalog.js";
+import { registerRedditTools } from "./reddit.js";
 
 /**
  * Register all universal + workflow tools on an MCP server instance.
@@ -383,4 +384,7 @@ Examples:
       }
     );
   }
+
+  // ─── Reddit ────────────────────────────────────────────
+  registerRedditTools(server, z, connections);
 }
