@@ -2673,6 +2673,232 @@ export const SERVICE_CATALOG = {
     authHeader: (creds) => ({ "Authorization": `Bearer ${creds.accessToken}`, "Content-Type": "application/json" }),
   },
 
+  // ── BigCommerce ──────────────────────────────────────────
+  bigcommerce: {
+    name: "BigCommerce", type: "ecommerce",
+    description: "E-commerce platform — products, orders, customers, categories",
+    baseUrl: "https://api.bigcommerce.com/stores/{store_hash}/v3",
+    authType: "api_key", credentialKeys: ["accessToken", "storeHash"],
+    capabilities: [
+      { name: "manage_products", actions: ["create", "list", "get"], description: "Manage products" },
+      { name: "manage_orders", actions: ["list", "get"], description: "Manage orders" },
+      { name: "manage_customers", actions: ["create", "list"], description: "Manage customers" },
+    ],
+    endpoints: {
+      list_products:  { method: "GET",  path: "/catalog/products", query: ["page", "limit"] },
+      create_product: { method: "POST", path: "/catalog/products", body: { name: "", type: "physical", weight: 0, price: 0 } },
+      get_product:    { method: "GET",  path: "/catalog/products/{product_id}" },
+      list_orders:    { method: "GET",  path: "/orders", query: ["page", "limit"] },
+      get_order:      { method: "GET",  path: "/orders/{order_id}" },
+      list_customers: { method: "GET",  path: "/customers", query: ["page", "limit"] },
+      create_customer:{ method: "POST", path: "/customers", body: [{ email: "", first_name: "", last_name: "" }] },
+      list_categories:{ method: "GET",  path: "/catalog/categories" },
+    },
+    authHeader: (creds) => ({ "X-Auth-Token": creds.accessToken, "Content-Type": "application/json" }),
+  },
+
+  // ── Twitch ──────────────────────────────────────────────
+  twitch: {
+    name: "Twitch", type: "social_media",
+    description: "Live streaming — streams, users, channels, clips, chat",
+    baseUrl: "https://api.twitch.tv/helix",
+    authType: "oauth", credentialKeys: ["accessToken", "clientId"],
+    capabilities: [
+      { name: "manage_streams", actions: ["list"], description: "Get stream info" },
+      { name: "manage_users", actions: ["get", "search"], description: "Get user data" },
+      { name: "manage_clips", actions: ["list", "create"], description: "Manage clips" },
+    ],
+    endpoints: {
+      get_streams:       { method: "GET", path: "/streams", query: ["user_id", "user_login", "game_id", "first"] },
+      get_users:         { method: "GET", path: "/users", query: ["id", "login"] },
+      search_channels:   { method: "GET", path: "/search/channels", query: ["query", "first"] },
+      get_clips:         { method: "GET", path: "/clips", query: ["broadcaster_id", "id", "first"] },
+      create_clip:       { method: "POST", path: "/clips", query: ["broadcaster_id"] },
+      get_channel_info:  { method: "GET", path: "/channels", query: ["broadcaster_id"] },
+      get_top_games:     { method: "GET", path: "/games/top", query: ["first"] },
+    },
+    authHeader: (creds) => ({ "Authorization": `Bearer ${creds.accessToken}`, "Client-Id": creds.clientId }),
+  },
+
+  // ── Wave ────────────────────────────────────────────────
+  wave: {
+    name: "Wave", type: "accounting",
+    description: "Free accounting — invoicing, payments, expenses via GraphQL",
+    baseUrl: "https://gql.waveapps.com/graphql/public",
+    authType: "oauth", credentialKeys: ["accessToken"],
+    capabilities: [
+      { name: "manage_invoices", actions: ["create", "list"], description: "Manage invoices" },
+      { name: "manage_customers", actions: ["create", "list"], description: "Manage customers" },
+    ],
+    endpoints: {
+      graphql: { method: "POST", path: "/", body: { query: "" } },
+    },
+    authHeader: (creds) => ({ "Authorization": `Bearer ${creds.accessToken}`, "Content-Type": "application/json" }),
+  },
+
+  // ── Loom ────────────────────────────────────────────────
+  loom: {
+    name: "Loom", type: "productivity",
+    description: "Video messaging — recordings, transcripts, workspace",
+    baseUrl: "https://developer.loom.com",
+    authType: "api_key", credentialKeys: ["accessToken"],
+    capabilities: [
+      { name: "manage_videos", actions: ["list", "get", "delete"], description: "Manage recordings" },
+    ],
+    endpoints: {
+      list_videos:         { method: "POST", path: "/v1/videos", body: {} },
+      get_video:           { method: "GET",  path: "/v1/videos/{id}" },
+      delete_video:        { method: "DELETE", path: "/v1/videos/{id}" },
+      get_video_transcript:{ method: "GET",  path: "/v1/videos/{id}/transcript" },
+    },
+    authHeader: (creds) => ({ "Authorization": `Bearer ${creds.accessToken}`, "Content-Type": "application/json" }),
+  },
+
+  // ── Google Cloud ────────────────────────────────────────
+  gcloud: {
+    name: "Google Cloud", type: "cloud",
+    description: "GCP — Cloud Storage, Compute Engine, BigQuery",
+    baseUrl: "https://storage.googleapis.com/storage/v1",
+    authType: "oauth", credentialKeys: ["accessToken", "projectId"],
+    capabilities: [
+      { name: "manage_storage", actions: ["list_buckets", "list_objects"], description: "Cloud Storage" },
+    ],
+    endpoints: {
+      list_buckets:  { method: "GET", path: "/b", query: ["project"] },
+      get_bucket:    { method: "GET", path: "/b/{bucket}" },
+      list_objects:  { method: "GET", path: "/b/{bucket}/o", query: ["prefix", "maxResults"] },
+      get_object:    { method: "GET", path: "/b/{bucket}/o/{object}" },
+      delete_object: { method: "DELETE", path: "/b/{bucket}/o/{object}" },
+    },
+    authHeader: (creds) => ({ "Authorization": `Bearer ${creds.accessToken}` }),
+  },
+
+  // ── Neon ────────────────────────────────────────────────
+  neon: {
+    name: "Neon", type: "database",
+    description: "Serverless Postgres — projects, branches, databases, endpoints",
+    baseUrl: "https://console.neon.tech/api/v2",
+    authType: "api_key", credentialKeys: ["apiKey"],
+    capabilities: [
+      { name: "manage_projects", actions: ["create", "list", "delete"], description: "Manage projects" },
+      { name: "manage_branches", actions: ["create", "list"], description: "Manage branches" },
+    ],
+    endpoints: {
+      list_projects:  { method: "GET",  path: "/projects" },
+      create_project: { method: "POST", path: "/projects", body: { project: { name: "" } } },
+      get_project:    { method: "GET",  path: "/projects/{project_id}" },
+      delete_project: { method: "DELETE", path: "/projects/{project_id}" },
+      list_branches:  { method: "GET",  path: "/projects/{project_id}/branches" },
+      create_branch:  { method: "POST", path: "/projects/{project_id}/branches", body: {} },
+      list_databases: { method: "GET",  path: "/projects/{project_id}/branches/{branch_id}/databases" },
+      list_endpoints: { method: "GET",  path: "/projects/{project_id}/endpoints" },
+    },
+    authHeader: (creds) => ({ "Authorization": `Bearer ${creds.apiKey}`, "Content-Type": "application/json" }),
+  },
+
+  // ── PlanetScale ─────────────────────────────────────────
+  planetscale: {
+    name: "PlanetScale", type: "database",
+    description: "Serverless MySQL — databases, branches, deploy requests",
+    baseUrl: "https://api.planetscale.com/v1",
+    authType: "oauth", credentialKeys: ["accessToken", "organizationId"],
+    capabilities: [
+      { name: "manage_databases", actions: ["create", "list", "delete"], description: "Manage databases" },
+      { name: "manage_branches", actions: ["create", "list"], description: "Manage branches" },
+    ],
+    endpoints: {
+      list_databases:       { method: "GET",  path: "/organizations/{organization}/databases" },
+      create_database:      { method: "POST", path: "/organizations/{organization}/databases", body: { name: "" } },
+      get_database:         { method: "GET",  path: "/organizations/{organization}/databases/{database}" },
+      delete_database:      { method: "DELETE", path: "/organizations/{organization}/databases/{database}" },
+      list_branches:        { method: "GET",  path: "/organizations/{organization}/databases/{database}/branches" },
+      create_branch:        { method: "POST", path: "/organizations/{organization}/databases/{database}/branches", body: { name: "" } },
+      list_deploy_requests: { method: "GET",  path: "/organizations/{organization}/databases/{database}/deploy-requests" },
+    },
+    authHeader: (creds) => ({ "Authorization": `Bearer ${creds.accessToken}`, "Content-Type": "application/json" }),
+  },
+
+  // ── Turso ───────────────────────────────────────────────
+  turso: {
+    name: "Turso", type: "database",
+    description: "Edge SQLite — databases, groups, locations, tokens",
+    baseUrl: "https://api.turso.tech/v1",
+    authType: "api_key", credentialKeys: ["apiToken", "organizationName"],
+    capabilities: [
+      { name: "manage_databases", actions: ["create", "list", "delete"], description: "Manage databases" },
+      { name: "manage_groups", actions: ["create", "list"], description: "Manage groups" },
+    ],
+    endpoints: {
+      list_databases:  { method: "GET",  path: "/organizations/{organizationName}/databases" },
+      create_database: { method: "POST", path: "/organizations/{organizationName}/databases", body: { name: "", group: "default" } },
+      get_database:    { method: "GET",  path: "/organizations/{organizationName}/databases/{databaseName}" },
+      delete_database: { method: "DELETE", path: "/organizations/{organizationName}/databases/{databaseName}" },
+      list_groups:     { method: "GET",  path: "/organizations/{organizationName}/groups" },
+      create_group:    { method: "POST", path: "/organizations/{organizationName}/groups", body: { name: "", location: "ord" } },
+      list_locations:  { method: "GET",  path: "/organizations/{organizationName}/locations" },
+      create_token:    { method: "POST", path: "/organizations/{organizationName}/databases/{databaseName}/auth/tokens" },
+    },
+    authHeader: (creds) => ({ "Authorization": `Bearer ${creds.apiToken}`, "Content-Type": "application/json" }),
+  },
+
+  // ── CockroachDB ─────────────────────────────────────────
+  cockroachdb: {
+    name: "CockroachDB", type: "database",
+    description: "Distributed SQL — clusters, databases, SQL users, backups",
+    baseUrl: "https://cockroachlabs.cloud/api/v1",
+    authType: "api_key", credentialKeys: ["apiKey"],
+    capabilities: [
+      { name: "manage_clusters", actions: ["create", "list", "get"], description: "Manage clusters" },
+    ],
+    endpoints: {
+      list_clusters:   { method: "GET",  path: "/clusters" },
+      create_cluster:  { method: "POST", path: "/clusters", body: { name: "", provider: "GCP", spec: {} } },
+      get_cluster:     { method: "GET",  path: "/clusters/{cluster_id}" },
+      delete_cluster:  { method: "DELETE", path: "/clusters/{cluster_id}" },
+      list_sql_users:  { method: "GET",  path: "/clusters/{cluster_id}/sql-users" },
+      create_sql_user: { method: "POST", path: "/clusters/{cluster_id}/sql-users", body: { name: "", password: "" } },
+      list_databases:  { method: "GET",  path: "/clusters/{cluster_id}/databases" },
+    },
+    authHeader: (creds) => ({ "Authorization": `Bearer ${creds.apiKey}`, "Content-Type": "application/json" }),
+  },
+
+  // ── Railway ─────────────────────────────────────────────
+  railway: {
+    name: "Railway", type: "cloud",
+    description: "Deploy anything — projects, services, environments via GraphQL",
+    baseUrl: "https://backboard.railway.app/graphql/v2",
+    authType: "api_key", credentialKeys: ["apiToken"],
+    capabilities: [
+      { name: "manage_projects", actions: ["create", "list"], description: "Manage projects" },
+    ],
+    endpoints: {
+      graphql: { method: "POST", path: "/", body: { query: "" } },
+    },
+    authHeader: (creds) => ({ "Authorization": `Bearer ${creds.apiToken}`, "Content-Type": "application/json" }),
+  },
+
+  // ── Render ──────────────────────────────────────────────
+  render: {
+    name: "Render", type: "cloud",
+    description: "Cloud platform — web services, static sites, databases, cron jobs",
+    baseUrl: "https://api.render.com/v1",
+    authType: "api_key", credentialKeys: ["apiKey"],
+    capabilities: [
+      { name: "manage_services", actions: ["create", "list", "get"], description: "Manage services" },
+      { name: "manage_deploys", actions: ["list", "create"], description: "Manage deploys" },
+    ],
+    endpoints: {
+      list_services:  { method: "GET",  path: "/services", query: ["limit", "cursor", "type"] },
+      get_service:    { method: "GET",  path: "/services/{serviceId}" },
+      create_service: { method: "POST", path: "/services", body: { type: "web_service", name: "" } },
+      list_deploys:   { method: "GET",  path: "/services/{serviceId}/deploys", query: ["limit"] },
+      create_deploy:  { method: "POST", path: "/services/{serviceId}/deploys", body: {} },
+      get_deploy:     { method: "GET",  path: "/services/{serviceId}/deploys/{deployId}" },
+      list_env_groups:{ method: "GET",  path: "/env-groups" },
+    },
+    authHeader: (creds) => ({ "Authorization": `Bearer ${creds.apiKey}`, "Content-Type": "application/json" }),
+  },
+
 };
 
 // ── Helpers ────────────────────────────────────────────────
