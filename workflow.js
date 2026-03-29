@@ -141,11 +141,22 @@ function evaluateComputeExpression(expr) {
   // Only allow numbers, operators, spaces, parens, and decimal points
   if (/^[\d\s+\-*/().]+$/.test(mathStr)) {
     try {
-      // Safe evaluation using Function constructor with no scope access
-      // Only processes pre-validated strings containing only math chars
-      const fn = new Function(`return (${mathStr});`);
-      const val = fn();
-      if (typeof val === 'number' && isFinite(val)) return val;
+      // Safe math parser — no eval/Function, just tokenize and calculate
+      const tokens = mathStr.match(/(\d+\.?\d*|[+\-*/()])/g);
+      if (tokens) {
+        const output = [], ops = [];
+        const prec = { '+': 1, '-': 1, '*': 2, '/': 2 };
+        const calc = (a, op, b) => op === '+' ? a + b : op === '-' ? a - b : op === '*' ? a * b : op === '/' ? (b !== 0 ? a / b : NaN) : NaN;
+        for (const t of tokens) {
+          if (/^\d/.test(t)) { output.push(parseFloat(t)); }
+          else if (t === '(') { ops.push(t); }
+          else if (t === ')') { while (ops.length && ops[ops.length - 1] !== '(') { const op = ops.pop(); const b = output.pop(), a = output.pop(); output.push(calc(a, op, b)); } ops.pop(); }
+          else { while (ops.length && ops[ops.length - 1] !== '(' && (prec[ops[ops.length - 1]] || 0) >= (prec[t] || 0)) { const op = ops.pop(); const b = output.pop(), a = output.pop(); output.push(calc(a, op, b)); } ops.push(t); }
+        }
+        while (ops.length) { const op = ops.pop(); const b = output.pop(), a = output.pop(); output.push(calc(a, op, b)); }
+        const val = output[0];
+        if (typeof val === 'number' && isFinite(val)) return val;
+      }
     } catch {
       // Fall through
     }
