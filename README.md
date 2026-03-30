@@ -2,20 +2,22 @@
 
 # 0nMCP
 
-### 945 Tools. 54 Services. One MCP Server.
+### 995+ Tools. 55 Services. One MCP Server.
 
 **The most comprehensive MCP server available.**<br>
-Connect any AI to any API. Natural language. Zero configuration. $0.01/run.
+Connect any AI to any API. Natural language. Zero configuration. $0.01/run.<br>
+4 patents filed. LinkedIn certifications. Daily patent monitoring via 0nDefender.
 
 [![npm version](https://img.shields.io/npm/v/0nmcp.svg?style=flat-square)](https://www.npmjs.com/package/0nmcp)
 [![npm downloads](https://img.shields.io/npm/dm/0nmcp.svg?style=flat-square)](https://www.npmjs.com/package/0nmcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen?style=flat-square)](https://nodejs.org)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-blueviolet?style=flat-square)](https://modelcontextprotocol.io)
-[![Tools](https://img.shields.io/badge/tools-945-orange?style=flat-square)](#tool-count-breakdown)
-[![Services](https://img.shields.io/badge/services-54-blue?style=flat-square)](#all-54-services)
+[![Tools](https://img.shields.io/badge/tools-995+-orange?style=flat-square)](#tool-count-breakdown)
+[![Services](https://img.shields.io/badge/services-55-blue?style=flat-square)](#all-55-services)
+[![Patents](https://img.shields.io/badge/patents-4%20filed-blueviolet?style=flat-square)](#key-features)
 
-[Website](https://0nmcp.com) &middot; [Quick Start](#quick-start) &middot; [All 54 Services](#all-54-services) &middot; [MCP Config](#mcp-configuration) &middot; [Community](https://0nmcp.com/community)
+[Website](https://0nmcp.com) &middot; [Quick Start](#quick-start) &middot; [All 55 Services](#all-55-services) &middot; [MCP Config](#mcp-configuration) &middot; [Certifications](https://0nmcp.com/learn) &middot; [Community](https://0nmcp.com/community)
 
 </div>
 
@@ -117,7 +119,7 @@ That's it. Your AI can now use 945 tools across 54 services.
 | Service | Tools | What You Can Do |
 |---------|-------|-----------------|
 | **Mailchimp** | Email Marketing | Campaigns, audiences, automations |
-| **LinkedIn** | Social | Posts, profiles, companies |
+| **LinkedIn** | 50 tools | Posts, profiles, org pages, ads, reporting, events, certifications |
 | **Instagram** | Social | Posts, stories, insights |
 | **TikTok** | Social | Videos, analytics |
 | **Twitter/X** | Social | Tweets, timelines, users |
@@ -169,14 +171,14 @@ That's it. Your AI can now use 945 tools across 54 services.
 
 | Module | Tools | Description |
 |--------|-------|-------------|
-| **Service Catalog** | 651 | API tools across 54 services |
-| **CRM Module** | 294 | Contacts, calendars, pipelines, invoices, payments, social, custom objects |
+| **Service Catalog** | 701 | API tools across 55 services (including LinkedIn 50-tool suite) |
+| **CRM Module** | 245 | Contacts, calendars, pipelines, invoices, payments, social, custom objects |
 | **0nVault** | 4 | AES-256-GCM machine-bound encryption |
 | **Vault Containers** | 8 | Patent-pending multi-layer encrypted containers (US #63/990,046) |
 | **Deed Transfer** | 6 | Digital business asset packaging and transfer |
-| **Engine** | 6 | Credential import, verification, AI platform config generation |
+| **Engine** | 29 | Credential import, verification, AI platform config generation |
 | **App Builder** | 5 | Operations, routes, middleware, scheduler |
-| **Total** | **945** | |
+| **Total** | **995+** | |
 
 ---
 
@@ -315,6 +317,51 @@ Credentials are stored in `~/.0n/connections/` and workflows in `~/.0n/workflows
 
 ---
 
+## LinkedIn Integration (50 tools)
+
+Full LinkedIn API v2 suite with 17 OAuth scopes:
+
+| Category | Endpoints | Capabilities |
+|----------|-----------|-------------|
+| **Profile** | 5 | Basic info, email, connections, verification, photos |
+| **Social** | 10 | Posts CRUD, comments, likes, shares, image/video upload |
+| **Organization** | 10 | Pages, stats, followers, visitors, brand pages |
+| **Advertising** | 15 | Accounts, campaigns, creatives, targeting, lead forms |
+| **Ad Reporting** | 5 | Analytics, conversions, budgets, InMail stats |
+| **Events** | 5 | Create, manage, attendees |
+
+---
+
+## 0nMCP Certifications
+
+Complete courses and earn LinkedIn-verifiable certifications:
+
+| Certification | Course | Level |
+|--------------|--------|-------|
+| **0nMCP Certified Orchestrator** | 0nMCP Mastery | Getting Started |
+| **CRM Automation Specialist** | CRM Automation Blueprint | Intermediate |
+| **Security Engineer** | 0nVault Security | Advanced |
+| **AI Council Architect** | 0nPlex Council | Advanced |
+| **Enterprise Deployer** | Enterprise Deployment | Enterprise |
+| **Certified Developer** | .0n SWITCH Files | Fundamentals |
+
+Add certifications to your LinkedIn profile with one click. Public verification at `0nmcp.com/verify/{certId}`.
+
+---
+
+## 0nDefender (Patent Intelligence)
+
+Always-on competitive intelligence that monitors four threat vectors daily:
+
+- **MCP Ecosystem Entrants** — new companies building on MCP
+- **Patent Conflicts** — USPTO/WIPO filings overlapping our 4 patents
+- **Acquisition Signals** — companies that might license or acquire
+- **Brand Protection** — unauthorized use of 0nMCP IP
+
+Automated daily scans via Claude AI with web search. Dashboard at `/admin/patent-intel`.
+
+---
+
 ## Links
 
 - **Website**: [0nmcp.com](https://0nmcp.com)
@@ -323,6 +370,8 @@ Credentials are stored in `~/.0n/connections/` and workflows in `~/.0n/workflows
 - **Community**: [0nmcp.com/community](https://0nmcp.com/community)
 - **Forum**: [0nmcp.com/forum](https://0nmcp.com/forum)
 - **Marketplace**: [marketplace.rocketclients.com](https://marketplace.rocketclients.com)
+- **Learn & Certify**: [0nmcp.com/learn](https://0nmcp.com/learn)
+- **Community Grid**: [grid.0nmcp.com](https://grid.0nmcp.com)
 
 ---
 
