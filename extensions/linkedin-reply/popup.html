@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { width: 380px; background: #0B0F19; color: #E8EAED; font-family: system-ui, -apple-system, sans-serif; }
+    .header { padding: 16px; border-bottom: 1px solid #1E293B; display: flex; align-items: center; gap: 10px; }
+    .logo { font-size: 18px; font-weight: 900; }
+    .logo span { color: #6EE05A; }
+    .badge { font-size: 10px; color: #A3AED0; background: #1E293B; padding: 2px 8px; border-radius: 20px; }
+    .section { padding: 16px; }
+    .section-title { font-size: 11px; font-weight: 700; color: #6EE05A; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; }
+    .btn { width: 100%; padding: 12px; border: none; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; margin-bottom: 8px; transition: all 0.15s; display: flex; align-items: center; gap: 8px; }
+    .btn-primary { background: #6EE05A; color: #0B0F19; }
+    .btn-primary:hover { background: #5CB83A; }
+    .btn-secondary { background: #111827; color: #E8EAED; border: 1px solid #1E293B; }
+    .btn-secondary:hover { border-color: #6EE05A; color: #6EE05A; }
+    .input { width: 100%; padding: 10px 12px; background: #111827; border: 1px solid #1E293B; border-radius: 8px; color: #E8EAED; font-size: 13px; outline: none; margin-bottom: 8px; resize: none; font-family: inherit; }
+    .input:focus { border-color: #6EE05A; }
+    .input::placeholder { color: #4A5568; }
+    .reply-box { background: #111827; border: 1px solid #1E293B; border-radius: 10px; padding: 12px; margin-bottom: 8px; }
+    .reply-text { font-size: 13px; line-height: 1.5; color: #E8EAED; white-space: pre-wrap; }
+    .reply-meta { display: flex; justify-content: space-between; margin-top: 8px; font-size: 10px; color: #4A5568; }
+    .copy-btn { background: none; border: none; color: #6EE05A; font-size: 11px; font-weight: 600; cursor: pointer; padding: 4px 8px; border-radius: 4px; }
+    .copy-btn:hover { background: rgba(110,224,90,0.1); }
+    .status { padding: 8px 16px; font-size: 11px; text-align: center; }
+    .status.success { color: #6EE05A; }
+    .status.error { color: #EF4444; }
+    .key-input { display: flex; gap: 8px; margin-bottom: 12px; }
+    .key-input input { flex: 1; }
+    .key-input button { padding: 10px 16px; white-space: nowrap; }
+    .tabs { display: flex; border-bottom: 1px solid #1E293B; }
+    .tab { flex: 1; padding: 10px; text-align: center; font-size: 12px; font-weight: 600; cursor: pointer; color: #4A5568; border-bottom: 2px solid transparent; }
+    .tab.active { color: #6EE05A; border-bottom-color: #6EE05A; }
+    .post-card { background: #111827; border: 1px solid #1E293B; border-radius: 10px; padding: 12px; margin-bottom: 8px; cursor: pointer; transition: border-color 0.15s; }
+    .post-card:hover { border-color: #6EE05A; }
+    .post-author { font-size: 12px; font-weight: 600; color: #E8EAED; }
+    .post-preview { font-size: 11px; color: #A3AED0; margin-top: 4px; line-height: 1.4; }
+    .post-engagement { font-size: 10px; color: #4A5568; margin-top: 6px; }
+    .hidden { display: none; }
+    .loading { text-align: center; padding: 20px; color: #A3AED0; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo"><span>0n</span>LinkedIn</div>
+    <div class="badge">AI Reply Engine</div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="reply" onclick="switchTab('reply')">Reply</div>
+    <div class="tab" data-tab="find" onclick="switchTab('find')">Find Posts</div>
+    <div class="tab" data-tab="settings" onclick="switchTab('settings')">Settings</div>
+  </div>
+
+  <!-- REPLY TAB -->
+  <div id="tab-reply" class="section">
+    <div class="section-title">Generate Reply</div>
+    <textarea id="post-content" class="input" rows="4" placeholder="Paste the LinkedIn post text here... or click a post on LinkedIn and I'll grab it"></textarea>
+
+    <div style="display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap;">
+      <button class="btn btn-secondary" style="flex:1;min-width:0;padding:8px;font-size:11px;" onclick="setTone('thoughtful')">🧠 Thoughtful</button>
+      <button class="btn btn-secondary" style="flex:1;min-width:0;padding:8px;font-size:11px;" onclick="setTone('supportive')">💪 Supportive</button>
+      <button class="btn btn-secondary" style="flex:1;min-width:0;padding:8px;font-size:11px;" onclick="setTone('contrarian')">🔥 Contrarian</button>
+      <button class="btn btn-secondary" style="flex:1;min-width:0;padding:8px;font-size:11px;" onclick="setTone('expert')">🎓 Expert</button>
+      <button class="btn btn-secondary" style="flex:1;min-width:0;padding:8px;font-size:11px;" onclick="setTone('funny')">😄 Funny</button>
+    </div>
+
+    <button id="generate-btn" class="btn btn-primary" onclick="generateReply()">
+      ⚡ Generate Reply
+    </button>
+
+    <div id="reply-output" class="hidden">
+      <div class="reply-box">
+        <div id="reply-text" class="reply-text"></div>
+        <div class="reply-meta">
+          <span id="reply-tone"></span>
+          <button class="copy-btn" onclick="copyReply()">📋 Copy</button>
+        </div>
+      </div>
+      <button class="btn btn-secondary" onclick="generateReply()" style="font-size: 11px; padding: 8px;">🔄 Regenerate</button>
+    </div>
+
+    <div id="status-reply" class="status hidden"></div>
+  </div>
+
+  <!-- FIND POSTS TAB -->
+  <div id="tab-find" class="section hidden">
+    <div class="section-title">Find Trending Posts to Comment On</div>
+    <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+      <input id="find-topic" class="input" style="margin:0" placeholder="Topic or industry...">
+      <button class="btn btn-primary" style="width:auto;margin:0;padding:8px 16px" onclick="findPosts()">🔍</button>
+    </div>
+    <div id="posts-list">
+      <div class="loading">Enter a topic to find trending posts</div>
+    </div>
+  </div>
+
+  <!-- SETTINGS TAB -->
+  <div id="tab-settings" class="section hidden">
+    <div class="section-title">Groq API Key (Free)</div>
+    <p style="font-size:11px;color:#A3AED0;margin-bottom:8px;">Get a free key at console.groq.com</p>
+    <div class="key-input">
+      <input id="api-key" class="input" style="margin:0" type="password" placeholder="gsk_...">
+      <button class="btn btn-primary" style="width:auto;margin:0" onclick="saveKey()">Save</button>
+    </div>
+
+    <div class="section-title" style="margin-top:16px">Your LinkedIn Profile</div>
+    <textarea id="profile-context" class="input" rows="3" placeholder="Describe yourself briefly... e.g. 'AI automation founder, 0nMCP creator, helping agencies scale'"></textarea>
+    <button class="btn btn-secondary" onclick="saveProfile()" style="font-size:11px;padding:8px;">Save Profile Context</button>
+
+    <div id="status-settings" class="status hidden"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
