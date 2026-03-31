@@ -2960,6 +2960,74 @@ export const SERVICE_CATALOG = {
     authHeader: (creds) => ({ "Authorization": `Bearer ${creds.apiKey}`, "Content-Type": "application/json" }),
   },
 
+  // ── CloudConvert ────────────────────────────────────────────────
+  cloudconvert: {
+    name: "CloudConvert",
+    type: "utility",
+    description: "File conversion API — convert between 200+ formats (PDF, DOCX, PNG, MP4, etc.), optimize, merge, capture websites, create thumbnails",
+    baseUrl: "https://api.cloudconvert.com/v2",
+    authType: "apiKey",
+    credentialKeys: ["apiKey"],
+    capabilities: [
+      "convert files between 200+ formats",
+      "merge PDFs and documents",
+      "optimize images and PDFs",
+      "capture website screenshots",
+      "create thumbnails from documents",
+      "extract text from PDFs (OCR)",
+      "convert spreadsheets to CSV/JSON",
+      "watermark PDFs",
+      "compress videos",
+      "manage conversion jobs and tasks",
+    ],
+    endpoints: {
+      // Jobs (multi-step conversion pipelines)
+      create_job:         { method: "POST", path: "/jobs", body: { tasks: {} } },
+      list_jobs:          { method: "GET",  path: "/jobs", query: ["status", "tag", "per_page", "page"] },
+      get_job:            { method: "GET",  path: "/jobs/{jobId}" },
+      delete_job:         { method: "DELETE", path: "/jobs/{jobId}" },
+      wait_job:           { method: "GET",  path: "/jobs/{jobId}/wait" },
+
+      // Tasks
+      create_task:        { method: "POST", path: "/tasks", body: { operation: "", input: "" } },
+      list_tasks:         { method: "GET",  path: "/tasks", query: ["status", "operation", "job_id", "per_page", "page"] },
+      get_task:           { method: "GET",  path: "/tasks/{taskId}" },
+      delete_task:        { method: "DELETE", path: "/tasks/{taskId}" },
+      wait_task:          { method: "GET",  path: "/tasks/{taskId}/wait" },
+      cancel_task:        { method: "POST", path: "/tasks/{taskId}/cancel" },
+      retry_task:         { method: "POST", path: "/tasks/{taskId}/retry" },
+
+      // Conversion operations
+      convert:            { method: "POST", path: "/convert", body: { input: "", input_format: "", output_format: "" } },
+      optimize:           { method: "POST", path: "/optimize", body: { input: "", input_format: "" } },
+      capture_website:    { method: "POST", path: "/capture-website", body: { url: "", output_format: "pdf" } },
+      create_thumbnail:   { method: "POST", path: "/thumbnail", body: { input: "", output_format: "png" } },
+      merge:              { method: "POST", path: "/merge", body: { input: [], output_format: "pdf" } },
+      create_archive:     { method: "POST", path: "/archive", body: { input: [], output_format: "zip" } },
+      watermark:          { method: "POST", path: "/watermark", body: { input: "", input_format: "pdf" } },
+      metadata:           { method: "POST", path: "/metadata", body: { input: "", input_format: "" } },
+
+      // Import/Export (file transfer)
+      import_url:         { method: "POST", path: "/import/url", body: { url: "" } },
+      import_upload:      { method: "POST", path: "/import/upload" },
+      import_s3:          { method: "POST", path: "/import/s3", body: { bucket: "", region: "", key: "" } },
+      import_google_cloud: { method: "POST", path: "/import/google-cloud-storage", body: { bucket: "", key: "" } },
+      export_url:         { method: "POST", path: "/export/url", body: { input: "" } },
+      export_s3:          { method: "POST", path: "/export/s3", body: { input: "", bucket: "", region: "", key: "" } },
+      export_google_cloud: { method: "POST", path: "/export/google-cloud-storage", body: { input: "", bucket: "", key: "" } },
+
+      // Users & Usage
+      get_user:           { method: "GET",  path: "/users/me" },
+      get_balance:        { method: "GET",  path: "/users/me/balance" },
+
+      // Webhooks
+      create_webhook:     { method: "POST", path: "/webhooks", body: { url: "", events: [] } },
+      list_webhooks:      { method: "GET",  path: "/webhooks" },
+      delete_webhook:     { method: "DELETE", path: "/webhooks/{webhookId}" },
+    },
+    authHeader: (creds) => ({ "Authorization": `Bearer ${creds.apiKey}`, "Content-Type": "application/json" }),
+  },
+
 };
 
 // ── Helpers ────────────────────────────────────────────────
