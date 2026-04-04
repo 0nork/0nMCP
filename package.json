@@ -1,8 +1,8 @@
 {
   "name": "0nmcp",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "mcpName": "io.github.0nork/0nMCP",
-  "description": "Universal AI API Orchestrator — 1,466 tools across 101 services. Connect Claude, GPT, Gemini, Cursor, VS Code to Slack, Stripe, CRM, Google, Shopify, and 96 more. Vault encryption. .0n workflows. 5 patents pending. MIT licensed.",
+  "description": "Universal AI API Orchestrator — 1,589 tools, 102 services. CRM, Stripe, Slack, Telegram, GitHub, Supabase + 96 more. Vault encryption, .0n Standard v2.0, 5 patents pending. Official MCP Registry listed. Free and open source.",
   "type": "module",
   "main": "index.js",
   "types": "types/index.d.ts",
@@ -199,6 +199,6 @@
     "triggers": 155,
     "totalCapabilities": 1078,
     "categories": 21,
-    "lastUpdated": "2026-04-03T09:50:10.449Z"
+    "lastUpdated": "2026-04-03T09:56:25.359Z"
   }
 }

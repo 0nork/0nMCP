@@ -7,12 +7,12 @@
     "url": "https://github.com/0nork/0nMCP",
     "source": "github"
   },
-  "version": "3.0.1",
+  "version": "3.1.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "0nmcp",
-      "version": "3.0.1",
+      "version": "3.1.0",
       "transport": {
         "type": "stdio"
       }
