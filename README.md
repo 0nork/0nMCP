@@ -57,6 +57,59 @@ That's it. Your AI can now use 1,554 tools across 96 services.
 
 ---
 
+## MCP Configuration
+
+**No API key required.** Just paste this config into your AI platform:
+
+### Claude Desktop
+
+Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (Mac) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
+
+```json
+{
+  "mcpServers": {
+    "0nMCP": {
+      "command": "npx",
+      "args": ["-y", "0nmcp"]
+    }
+  }
+}
+```
+
+### Cursor / Windsurf
+
+Add to `.cursor/mcp.json` or `~/.codeium/windsurf/mcp_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "0nMCP": {
+      "command": "npx",
+      "args": ["-y", "0nmcp"]
+    }
+  }
+}
+```
+
+### VS Code (Copilot MCP)
+
+Add to `.vscode/mcp.json`:
+
+```json
+{
+  "servers": {
+    "0nMCP": {
+      "command": "npx",
+      "args": ["-y", "0nmcp"]
+    }
+  }
+}
+```
+
+> **Note:** No `ANTHROPIC_API_KEY` or any other API key is needed in the config. 0nMCP provides the tools — your AI platform (Claude, Cursor, etc.) provides the intelligence. API keys for individual services (Stripe, Slack, etc.) can be added later via `0nmcp engine import`.
+
+---
+
 ## Tool Count Breakdown
 
 | Module | Tools | Description |
